@@ -10,11 +10,15 @@ class User(AbstractUser):
         ('student', 'Student'),
         ('staff', 'Staff'),
     )
-    role = models.CharField(max_length=10, choices=ROLE_CHOICES)
     phone = models.CharField(max_length=15, blank=True)
     address = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='student')
+    email = models.EmailField(unique=True)
+    
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = ['email', 'role']
 
     def __str__(self):
         return self.username
