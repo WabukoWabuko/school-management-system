@@ -36,50 +36,54 @@ function StudentDashboard() {
   };
 
   return (
-    <div className="container mx-auto p-6">
-      <h2 className="text-2xl font-bold mb-6">Student Dashboard</h2>
-      {error && <div className="bg-red-100 text-red-700 p-4 rounded mb-4">{error}</div>}
-      <div className="bg-white shadow-lg rounded-lg p-6 mb-6">
-        <h3 className="text-xl font-semibold mb-4">Timetable</h3>
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="border p-2">Day</th>
-              <th className="border p-2">Subject</th>
-              <th className="border p-2">Time</th>
-            </tr>
-          </thead>
-          <tbody>
-            {timetable.map((entry) => (
-              <tr key={entry.id}>
-                <td className="border p-2">{entry.day}</td>
-                <td className="border p-2">{entry.subject}</td>
-                <td className="border p-2">{entry.start_time} - {entry.end_time}</td>
+    <div className="container py-5">
+      <h2 className="mb-4">Student Dashboard</h2>
+      {error && <div className="alert alert-danger">{error}</div>}
+      <div className="card shadow mb-4">
+        <div className="card-body">
+          <h3 className="card-title mb-4">Timetable</h3>
+          <table className="table table-striped">
+            <thead>
+              <tr>
+                <th>Day</th>
+                <th>Subject</th>
+                <th>Time</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {timetable.map((entry) => (
+                <tr key={entry.id}>
+                  <td>{entry.day}</td>
+                  <td>{entry.subject}</td>
+                  <td>{entry.start_time} - {entry.end_time}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
-      <div className="bg-white shadow-lg rounded-lg p-6">
-        <h3 className="text-xl font-semibold mb-4">Homework</h3>
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="border p-2">Subject</th>
-              <th className="border p-2">Description</th>
-              <th className="border p-2">Due Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {homework.map((hw) => (
-              <tr key={hw.id}>
-                <td className="border p-2">{hw.subject}</td>
-                <td className="border p-2">{hw.description}</td>
-                <td className="border p-2">{hw.due_date}</td>
+      <div className="card shadow">
+        <div className="card-body">
+          <h3 className="card-title mb-4">Homework</h3>
+          <table className="table table-striped">
+            <thead>
+              <tr>
+                <th>Subject</th>
+                <th>Description</th>
+                <th>Due Date</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {homework.map((hw) => (
+                <tr key={hw.id}>
+                  <td>{hw.subject}</td>
+                  <td>{hw.description}</td>
+                  <td>{hw.due_date}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

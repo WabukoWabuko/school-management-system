@@ -45,75 +45,80 @@ function TeacherDashboard() {
   };
 
   return (
-    <div className="container mx-auto p-6">
-      <h2 className="text-2xl font-bold mb-6">Teacher Dashboard</h2>
-      {error && <div className="bg-red-100 text-red-700 p-4 rounded mb-4">{error}</div>}
-      <div className="bg-white shadow-lg rounded-lg p-6 mb-6">
-        <h3 className="text-xl font-semibold mb-4">Enter Grade</h3>
-        <form onSubmit={handleCreateGrade} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium">Student ID</label>
-            <input
-              type="text"
-              name="student"
-              value={formData.student}
-              onChange={handleInputChange}
-              className="w-full border rounded p-2"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium">Subject ID</label>
-            <input
-              type="text"
-              name="subject"
-              value={formData.subject}
-              onChange={handleInputChange}
-              className="w-full border rounded p-2"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium">Marks</label>
-            <input
-              type="number"
-              name="marks"
-              value={formData.marks}
-              onChange={handleInputChange}
-              className="w-full border rounded p-2"
-              required
-            />
-          </div>
-          <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-            Add Grade
-          </button>
-        </form>
+    <div className="container py-5">
+      <h2 className="mb-4">Teacher Dashboard</h2>
+      {error && <div className="alert alert-danger">{error}</div>}
+      <div className="card shadow mb-4">
+        <div className="card-body">
+          <h3 className="card-title mb-4">Enter Grade</h3>
+          <form onSubmit={handleCreateGrade}>
+            <div className="mb-3">
+              <label htmlFor="student" className="form-label">Student ID</label>
+              <input
+                type="text"
+                className="form-control"
+                id="student"
+                name="student"
+                value={formData.student}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            <div className="mb-3">
+              <label htmlFor="subject" className="form-label">Subject ID</label>
+              <input
+                type="text"
+                className="form-control"
+                id="subject"
+                name="subject"
+                value={formData.subject}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            <div className="mb-3">
+              <label htmlFor="marks" className="form-label">Marks</label>
+              <input
+                type="number"
+                className="form-control"
+                id="marks"
+                name="marks"
+                value={formData.marks}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            <button type="submit" className="btn btn-primary">Add Grade</button>
+          </form>
+        </div>
       </div>
-      <div className="bg-white shadow-lg rounded-lg p-6">
-        <h3 className="text-xl font-semibold mb-4">Manage Grades</h3>
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="border p-2">Student</th>
-              <th className="border p-2">Subject</th>
-              <th className="border p-2">Marks</th>
-              <th className="border p-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {grades.map((grade) => (
-              <tr key={grade.id}>
-                <td className="border p-2">{grade.student}</td>
-                <td className="border p-2">{grade.subject}</td>
-                <td className="border p-2">{grade.marks}</td>
-                <td className="border p-2">
-                  <button className="bg-yellow-500 text-white px-2 py-1 rounded mr-2">Edit</button>
-                  <button className="bg-red-500 text-white px-2 py-1 rounded">Delete</button>
-                </td>
+      <div className="card shadow">
+        <div className="card-body">
+          <h3 className="card-title mb-4">Manage Grades</h3>
+          <table className="table table-striped">
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Subject</th>
+                <th>Marks</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {grades.map((grade) => (
+                <tr key={grade.id}>
+                  <td>{grade.student}</td>
+                  <td>{grade.subject}</td>
+                  <td>{grade.marks}</td>
+                  <td>
+                    <button className="btn btn-warning btn-sm me-2">Edit</button>
+                    <button className="btn btn-primary btn-sm">Delete</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

@@ -58,95 +58,101 @@ function AdminDashboard() {
   };
 
   return (
-    <div className="container mx-auto p-6">
-      <h2 className="text-2xl font-bold mb-6">Admin Dashboard</h2>
-      {error && <div className="bg-red-100 text-red-700 p-4 rounded mb-4">{error}</div>}
-      <div className="bg-white shadow-lg rounded-lg p-6 mb-6">
-        <h3 className="text-xl font-semibold mb-4">Create User</h3>
-        <form onSubmit={handleCreateUser} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium">Username</label>
-            <input
-              type="text"
-              name="username"
-              value={formData.username}
-              onChange={handleInputChange}
-              className="w-full border rounded p-2"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium">Email</label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              className="w-full border rounded p-2"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium">Role</label>
-            <select
-              name="role"
-              value={formData.role}
-              onChange={handleInputChange}
-              className="w-full border rounded p-2"
-            >
-              <option value="admin">Admin</option>
-              <option value="teacher">Teacher</option>
-              <option value="parent">Parent</option>
-              <option value="student">Student</option>
-              <option value="staff">Staff</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium">Password</label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleInputChange}
-              className="w-full border rounded p-2"
-              required
-            />
-          </div>
-          <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-            Create User
-          </button>
-        </form>
+    <div className="container py-5">
+      <h2 className="mb-4">Admin Dashboard</h2>
+      {error && <div className="alert alert-danger">{error}</div>}
+      <div className="card shadow mb-4">
+        <div className="card-body">
+          <h3 className="card-title mb-4">Create User</h3>
+          <form onSubmit={handleCreateUser}>
+            <div className="mb-3">
+              <label htmlFor="username" className="form-label">Username</label>
+              <input
+                type="text"
+                className="form-control"
+                id="username"
+                name="username"
+                value={formData.username}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            <div className="mb-3">
+              <label htmlFor="email" className="form-label">Email</label>
+              <input
+                type="email"
+                className="form-control"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            <div className="mb-3">
+              <label htmlFor="role" className="form-label">Role</label>
+              <select
+                className="form-select"
+                id="role"
+                name="role"
+                value={formData.role}
+                onChange={handleInputChange}
+              >
+                <option value="admin">Admin</option>
+                <option value="teacher">Teacher</option>
+                <option value="parent">Parent</option>
+                <option value="student">Student</option>
+                <option value="staff">Staff</option>
+              </select>
+            </div>
+            <div className="mb-3">
+              <label htmlFor="password" className="form-label">Password</label>
+              <input
+                type="password"
+                className="form-control"
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            <button type="submit" className="btn btn-primary">Create User</button>
+          </form>
+        </div>
       </div>
-      <div className="bg-white shadow-lg rounded-lg p-6">
-        <h3 className="text-xl font-semibold mb-4">Manage Users</h3>
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="border p-2">Username</th>
-              <th className="border p-2">Role</th>
-              <th className="border p-2">Email</th>
-              <th className="border p-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user) => (
-              <tr key={user.id}>
-                <td className="border p-2">{user.username}</td>
-                <td className="border p-2">{user.role}</td>
-                <td className="border p-2">{user.email}</td>
-                <td className="border p-2">
-                  <button className="bg-yellow-500 text-white px-2 py-1 rounded mr-2">Edit</button>
-                  <button
-                    onClick={() => handleDeleteUser(user.id)}
-                    className="bg-red-500 text-white px-2 py-1 rounded"
-                  >
-                    Delete
-                  </button>
-                </td>
+      <div className="card shadow">
+        <div className="card-body">
+          <h3 className="card-title mb-4">Manage Users</h3>
+          <table className="table table-striped">
+            <thead>
+              <tr>
+                <th>Username</th>
+                <th>Role</th>
+                <th>Email</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {users.map((user) => (
+                <tr key={user.id}>
+                  <td>{user.username}</td>
+                  <td>{user.role}</td>
+                  <td>{user.email}</td>
+                  <td>
+                    <button className="btn btn-warning btn-sm me-2">Edit</button>
+                    <button
+                      onClick={() => handleDeleteUser(user.id)}
+                      className="btn btn-primary btn-sm"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
