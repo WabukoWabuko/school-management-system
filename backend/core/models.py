@@ -46,8 +46,8 @@ class Subject(models.Model):
 class Class(models.Model):
     name = models.CharField(max_length=50)
     subjects = models.ManyToManyField(Subject)
-    teachers = models.ManyToManyField(User, limit_choices_to={'role': 'teacher'})
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'role': 'admin'})
+    teachers = models.ManyToManyField(User, related_name='teaching_classes', limit_choices_to={'role': 'teacher'})
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_classes', limit_choices_to={'role': 'admin'})
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
