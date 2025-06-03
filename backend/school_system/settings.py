@@ -128,7 +128,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Additionals
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  
-    "https://nitaeka-frontend-links",
+    #"https://nitaeka-frontend-links",
 ]
 
 REST_FRAMEWORK = {
