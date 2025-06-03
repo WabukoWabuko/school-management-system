@@ -1,15 +1,23 @@
 from rest_framework import viewsets
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from .models import User, Subject, Class, Student, Parent, Exam, Grade, Attendance, Fee, Announcement, Message, Timetable, Homework, LibraryItem, LibraryBorrowing, LeaveApplication, ReportCard, ParentFeedback, AuditLog, SchoolSettings
+from .models import User, Subject, Class, Student, Parent, Exam, Grade, Attendance, Fee, Announcement, Message, Timetable, Homework, LibraryItem, LibraryBorrowing, Borrowers, LeaveApplication, ReportCard, ParentFeedback, AuditLog, SchoolSettings
 from .serializers import UserSerializer, SubjectSerializer, ClassSerializer, StudentSerializer, ParentSerializer, ExamSerializer, GradeSerializer, AttendanceSerializer, FeeSerializer, AnnouncementSerializer, MessageSerializer, TimetableSerializer, HomeworkSerializer, LibraryItemSerializer, LibraryBorrowingSerializer, LeaveApplicationSerializer, ReportCardSerializer, ParentFeedbackSerializer, AuditLogSerializer, SchoolSettingsSerializer
 from .permissions import IsAdmin, IsTeacher, IsParent, IsStudent, IsStaff, IsAdminOrReadOnly
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_current_user(request):
+    serializer = UserSerializer(request.user)
+    return Response(serializer.data)
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAdmin]
 
-class SubjectViewSet(viewsets.ModelViewSet):
+class SubjectViewSet(viewModelViewSet):
     queryset = Subject.objects.all()
     serializer_class = SubjectSerializer
     permission_classes = [IsAdminOrReadOnly]
@@ -45,10 +53,10 @@ class GradeViewSet(viewsets.ModelViewSet):
             return Grade.objects.filter(created_by=user)
         elif user.role == 'parent':
             parent = Parent.objects.get(user=user)
-            return Grade.objects.filter(student__parents=user)
+            return Grade.objects.filter(student__parents__parent=user)
         elif user.role == 'student':
             student = Student.objects.get(user=user)
-            return Grade.objects.filter(student=student)
+            return Grade.objects.filter(student=user)
         return self.queryset
 
 class AttendanceViewSet(viewsets.ModelViewSet):
@@ -61,8 +69,8 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         if user.role == 'teacher':
             return Attendance.objects.filter(created_by=user)
         elif user.role == 'parent':
-            parent = Parent.objects.get(user=user)
-            return Attendance.objects.filter(student__parents=user)
+            parent = Parent.objects.get(user=user))
+            return Attendance.objects.filter(student__parents__parent=user)
         return self.queryset
 
 class FeeViewSet(viewsets.ModelViewSet):
@@ -74,7 +82,7 @@ class FeeViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if user.role == 'parent':
             parent = Parent.objects.get(user=user)
-            return Fee.objects.filter(student__parents=user)
+            return Fee.objects.filter(student__parents__user=user)
         return self.queryset
 
 class AnnouncementViewSet(viewsets.ModelViewSet):
@@ -106,7 +114,7 @@ class TimetableViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if user.role == 'student':
             student = Student.objects.get(user=user)
-            return Timetable.objects.filter(class_instance__student=student)
+            return Timetable.objects.filter(class_instance__students=student)
         elif user.role == 'teacher':
             return Timetable.objects.filter(class_instance__teachers=user)
         return self.queryset
@@ -120,10 +128,10 @@ class HomeworkViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if user.role == 'student':
             student = Student.objects.get(user=user)
-            return Homework.objects.filter(class_instance__student=student)
+            return Homework.objects.filter(class_instance__students=student)
         elif user.role == 'parent':
             parent = Parent.objects.get(user=user)
-            return Homework.objects.filter(class_instance__student__parents=user)
+            return Homework.objects.filter(class_instance__students__parents=user)
         return self.queryset
 
 class LibraryItemViewSet(viewsets.ModelViewSet):
@@ -150,16 +158,16 @@ class LeaveApplicationViewSet(viewsets.ModelViewSet):
 class ReportCardViewSet(viewsets.ModelViewSet):
     queryset = ReportCard.objects.all()
     serializer_class = ReportCardSerializer
-    permission_classes = [IsAdmin]
+    permission_classes = [IsAdmin']
 
     def get_queryset(self):
         user = self.request.user
         if user.role == 'parent':
             parent = Parent.objects.get(user=user)
-            return ReportCard.objects.filter(student__parents=user)
+            return ReportCard.objects.filter(student__parents__parent=user))
         elif user.role == 'student':
             student = Student.objects.get(user=user)
-            return ReportCard.objects.filter(student=student)
+            return ReportCard.objects.filter(student=user)
         return self.queryset
 
 class ParentFeedbackViewSet(viewsets.ModelViewSet):

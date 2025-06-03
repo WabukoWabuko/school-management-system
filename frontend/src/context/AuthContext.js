@@ -12,11 +12,10 @@ export const AuthProvider = ({ children }) => {
       const token = localStorage.getItem('token');
       if (token) {
         try {
-          const response = await axios.get('http://localhost:8000/api/users/', {
+          const response = await axios.get('http://localhost:8000/api/users/me/', {
             headers: { Authorization: `Bearer ${token}` },
           });
-          const currentUser = response.data.find((u) => u.username === 'WabukoWabuko'); // Mock user lookup
-          setUser(currentUser || { role: 'unknown' });
+          setUser(response.data);
         } catch (err) {
           setUser(null);
         }

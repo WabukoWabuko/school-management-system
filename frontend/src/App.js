@@ -25,36 +25,41 @@ function App() {
           <Navbar />
           <main className="flex-grow-1">
             <Routes>
-              <Route exact path="/" element={<Home />} />
+              <Route path="/" element={<Home />} />
               <Route path="/about" element={<About />} />
               <Route path="/co-curricular" element={<CoCurricular />} />
               <Route path="/gallery" element={<Gallery />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/login" element={<Login />} />
-              <ProtectedRoute
+              <Route
                 path="/dashboard/admin"
-                element={<AdminDashboard />}
-                allowedRoles={['admin']}
+                element={
+                  <ProtectedRoute component={AdminDashboard} allowedRoles={['admin']} />
+                }
               />
-              <ProtectedRoute
+              <Route
                 path="/dashboard/teacher"
-                element={<TeacherDashboard />}
-                allowedRoles={['teacher']}
+                element={
+                  <ProtectedRoute component={TeacherDashboard} allowedRoles={['teacher']} />
+                }
               />
-              <ProtectedRoute
+              <Route
                 path="/dashboard/parent"
-                element={<ParentDashboard />}
-                allowedRoles={['parent']}
+                element={
+                  <ProtectedRoute component={ParentDashboard} allowedRoles={['parent']} />
+                }
               />
-              <ProtectedRoute
+              <Route
                 path="/dashboard/student"
-                element={<StudentDashboard />}
-                allowedRoles={['student']}
+                element={
+                  <ProtectedRoute component={StudentDashboard} allowedRoles={['student']} />
+                }
               />
-              <ProtectedRoute
+              <Route
                 path="/dashboard/staff"
-                element={<StaffDashboard />}
-                allowedRoles={['staff']}
+                element={
+                  <ProtectedRoute component={StaffDashboard} allowedRoles={['staff']} />
+                }
               />
               <Route path="/dashboard" element={<div className="container py-5"><h2>Select a Role Dashboard</h2></div>} />
             </Routes>

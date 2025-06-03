@@ -29,25 +29,58 @@ function Navbar() {
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav ms-auto">
             <li className="nav-item">
-              <NavLink className="nav-link" to="/" exact activeClassName="active">Home</NavLink>
+              <NavLink
+                className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                to="/"
+                end
+              >
+                Home
+              </NavLink>
             </li>
             <li className="nav-item">
-              <NavLink className="nav-link" to="/about" activeClassName="active">About</NavLink>
+              <NavLink
+                className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                to="/about"
+              >
+                About
+              </NavLink>
             </li>
             <li className="nav-item">
-              <NavLink className="nav-link" to="/co-curricular" activeClassName="active">Co-Curricular</NavLink>
+              <NavLink
+                className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                to="/co-curricular"
+              >
+                Co-Curricular
+              </NavLink>
             </li>
             <li className="nav-item">
-              <NavLink className="nav-link" to="/gallery" activeClassName="active">Gallery</NavLink>
+              <NavLink
+                className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                to="/gallery"
+              >
+                Gallery
+              </NavLink>
             </li>
             <li className="nav-item">
-              <NavLink className="nav-link" to="/contact" activeClassName="active">Contact</NavLink>
+              <NavLink
+                className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                to="/contact"
+              >
+                Contact
+              </NavLink>
             </li>
             <li className="nav-item">
               {token ? (
-                <button className="nav-link btn btn-outline-light ms-2" onClick={handleLogout}>Logout</button>
+                <button className="nav-link btn btn-outline-light ms-2" onClick={handleLogout}>
+                  Logout
+                </button>
               ) : (
-                <NavLink className="nav-link btn btn-outline-light ms-2" to="/login">Login</NavLink>
+                <NavLink
+                  className={({ isActive }) => `nav-link btn btn-outline-light ms-2 ${isActive ? 'active' : ''}`}
+                  to="/login"
+                >
+                  Login
+                </NavLink>
               )}
             </li>
           </ul>
