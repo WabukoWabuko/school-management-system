@@ -11,16 +11,16 @@ from .views import (
     GradeViewSet, 
     AttendanceViewSet, 
     FeeViewSet, 
-    AnnouncementViewSet,,
+    AnnouncementViewSet,
     MessageViewSet, 
     TimetableViewSet, 
     HomeworkViewSet, 
     LibraryItemViewSet, 
-    LibraryBorrowingViewSet,,
+    LibraryBorrowingViewSet,
     LeaveApplicationViewSet, 
-    ReportCardViewSet,,
-     ParentFeedbackViewSet,,
-     AuditLogViewSet,,
+    ReportCardViewSet,
+     ParentFeedbackViewSet,
+     AuditLogViewSet,
      SchoolSettingsViewSet,
 )
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
@@ -34,18 +34,18 @@ router.register(r'parents', ParentViewSet)
 router.register(r'exams', ExamViewSet)
 router.register(r'grades', GradeViewSet)
 router.register(r'attendance', AttendanceViewSet)
-router.register(r'fees', FeeViewSet))
+router.register(r'fees', FeeViewSet)
 router.register(r'announcements', AnnouncementViewSet)
 router.register(r'messages', MessageViewSet)
 router.register(r'timetables', TimetableViewSet)
 router.register(r'homework', HomeworkViewSet)
 router.register(r'library-items', LibraryItemViewSet)
-router.register(r'library-borrowings', LibraryBorrowingViewSet))
+router.register(r'library-borrowings', LibraryBorrowingViewSet)
 router.register(r'leave-applications', LeaveApplicationViewSet)
-router.register(r'report-cards', ReportCardViewSet))
-router.register(r'parent-feedback', ParentFeedbackViewSet))
-router.register(r'audit-logs', AuditLogViewSet))
-router.register(r'school-settings', SchoolSettingsViewSet))
+router.register(r'report-cards', ReportCardViewSet)
+router.register(r'parent-feedback', ParentFeedbackViewSet)
+router.register(r'audit-logs', AuditLogViewSet)
+router.register(r'school-settings', SchoolSettingsViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),

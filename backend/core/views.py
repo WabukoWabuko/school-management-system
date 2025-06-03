@@ -2,7 +2,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from .models import User, Subject, Class, Student, Parent, Exam, Grade, Attendance, Fee, Announcement, Message, Timetable, Homework, LibraryItem, LibraryBorrowing, Borrowers, LeaveApplication, ReportCard, ParentFeedback, AuditLog, SchoolSettings
+from .models import User, Subject, Class, Student, Parent, Exam, Grade, Attendance, Fee, Announcement, Message, Timetable, Homework, LibraryItem, LibraryBorrowing, LeaveApplication, ReportCard, ParentFeedback, AuditLog, SchoolSettings
 from .serializers import UserSerializer, SubjectSerializer, ClassSerializer, StudentSerializer, ParentSerializer, ExamSerializer, GradeSerializer, AttendanceSerializer, FeeSerializer, AnnouncementSerializer, MessageSerializer, TimetableSerializer, HomeworkSerializer, LibraryItemSerializer, LibraryBorrowingSerializer, LeaveApplicationSerializer, ReportCardSerializer, ParentFeedbackSerializer, AuditLogSerializer, SchoolSettingsSerializer
 from .permissions import IsAdmin, IsTeacher, IsParent, IsStudent, IsStaff, IsAdminOrReadOnly
 
@@ -17,7 +17,7 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     permission_classes = [IsAdmin]
 
-class SubjectViewSet(viewModelViewSet):
+class SubjectViewSet(viewsets.ModelViewSet):
     queryset = Subject.objects.all()
     serializer_class = SubjectSerializer
     permission_classes = [IsAdminOrReadOnly]
@@ -69,7 +69,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         if user.role == 'teacher':
             return Attendance.objects.filter(created_by=user)
         elif user.role == 'parent':
-            parent = Parent.objects.get(user=user))
+            parent = Parent.objects.get(user=user)
             return Attendance.objects.filter(student__parents__parent=user)
         return self.queryset
 
@@ -158,13 +158,13 @@ class LeaveApplicationViewSet(viewsets.ModelViewSet):
 class ReportCardViewSet(viewsets.ModelViewSet):
     queryset = ReportCard.objects.all()
     serializer_class = ReportCardSerializer
-    permission_classes = [IsAdmin']
+    permission_classes = [IsAdmin]
 
     def get_queryset(self):
         user = self.request.user
         if user.role == 'parent':
             parent = Parent.objects.get(user=user)
-            return ReportCard.objects.filter(student__parents__parent=user))
+            return ReportCard.objects.filter(student__parents__parent=user)
         elif user.role == 'student':
             student = Student.objects.get(user=user)
             return ReportCard.objects.filter(student=user)
