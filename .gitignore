@@ -1,0 +1,12 @@
+# Python/Django
+venv/
+*.pyc
+__pycache__/
+db.sqlite3
+
+# Node/React
+node_modules/
+build/
+
+# Vercel
+.vercel
