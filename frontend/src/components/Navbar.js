@@ -1,7 +1,16 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 
 function Navbar() {
+  const token = localStorage.getItem('token');
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('refresh');
+    navigate('/');
+  };
+
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
       <div className="container">
@@ -35,7 +44,11 @@ function Navbar() {
               <NavLink className="nav-link" to="/contact" activeClassName="active">Contact</NavLink>
             </li>
             <li className="nav-item">
-              <NavLink className="nav-link btn btn-outline-light ms-2" to="/login">Login</NavLink>
+              {token ? (
+                <button className="nav-link btn btn-outline-light ms-2" onClick={handleLogout}>Logout</button>
+              ) : (
+                <NavLink className="nav-link btn btn-outline-light ms-2" to="/login">Login</NavLink>
+              )}
             </li>
           </ul>
         </div>

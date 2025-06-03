@@ -7,6 +7,7 @@ import About from './pages/About';
 import CoCurricular from './pages/CoCurricular';
 import Gallery from './pages/Gallery';
 import Contact from './pages/Contact';
+import Login from './pages/Login';
 import './index.css';
 
 function App() {
@@ -21,7 +22,7 @@ function App() {
             <Route path="/co-curricular" element={<CoCurricular />} />
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/contact" element={<Contact />} />
-            <Route path="/login" element={<div className="container py-5"><h2>Login Page (Coming Soon)</h2></div>} />
+            <Route path="/login" element={<Login />} />
             <Route path="/dashboard" element={<div className="container py-5"><h2>Dashboard (Coming Soon)</h2></div>} />
           </Routes>
         </main>
