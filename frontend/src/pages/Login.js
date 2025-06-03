@@ -1,23 +1,56 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 
 function Login() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [formData, setFormData] = useState({
+    username: '',
+    password: '',
+  });
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { setUser } = useContext(AuthContext);
+
+  const handleInputChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:8000/api/token/', {
-        username,
-        password,
+      const response = await axios.post('http://localhost:8000/api/token/', formData);
+      const { access, refresh } = response.data;
+      localStorage.setItem('token', access);
+      localStorage.setItem('refresh', refresh);
+
+      // Fetch user data to get role
+      const userResponse = await axios.get('http://localhost:8000/api/users/me/', {
+        headers: { Authorization: `Bearer ${access}` },
       });
-      localStorage.setItem('token', response.data.access);
-      localStorage.setItem('refresh', response.data.refresh);
-      navigate('/dashboard');
+      const user = userResponse.data;
+      setUser(user);
+
+      // Redirect based on role
+      switch (user.role) {
+        case 'admin':
+          navigate('/dashboard/admin');
+          break;
+        case 'teacher':
+          navigate('/dashboard/teacher');
+          break;
+        case 'parent':
+          navigate('/dashboard/parent');
+          break;
+        case 'student':
+          navigate('/dashboard/student');
+          break;
+        case 'staff':
+          navigate('/dashboard/staff');
+          break;
+        default:
+          navigate('/');
+      }
     } catch (err) {
       setError('Invalid username or password');
     }
@@ -29,7 +62,7 @@ function Login() {
         <div className="col-md-6">
           <div className="card shadow">
             <div className="card-body">
-              <h2 className="card-title text-center mb-4">Login to Elite Academy</h2>
+              <h2 className="card-title text-center mb-4">Login</h2>
               {error && <div className="alert alert-danger">{error}</div>}
               <form onSubmit={handleSubmit}>
                 <div className="mb-3">
@@ -38,8 +71,9 @@ function Login() {
                     type="text"
                     className="form-control"
                     id="username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
+                    name="username"
+                    value={formData.username}
+                    onChange={handleInputChange}
                     required
                   />
                 </div>
@@ -49,8 +83,9 @@ function Login() {
                     type="password"
                     className="form-control"
                     id="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    name="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
                     required
                   />
                 </div>
