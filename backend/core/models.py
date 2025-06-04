@@ -1,8 +1,29 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.core.validators import MinValueValidator, MaxValueValidator
 
-class User(AbstractUser):
+class UserManager(BaseUserManager):
+    def create_user(self, username, email, role, password=None, **extra_fields):
+        if not username:
+            raise ValueError('The Username field must be set')
+        if not email:
+            raise ValueError('The Email field must be set')
+        email = self.normalize_email(email)
+        user = self.model(username=username, email=email, role=role, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, username, email, role, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError('Superuser must have is_staff=True.')
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError('Superuser must have is_superuser=True.')
+        return self.create_user(username, email, role, password, **extra_fields)
+
+class User(AbstractBaseUser, PermissionsMixin):
     ROLE_CHOICES = (
         ('admin', 'Admin'),
         ('teacher', 'Teacher'),
@@ -10,18 +31,20 @@ class User(AbstractUser):
         ('student', 'Student'),
         ('staff', 'Staff'),
     )
-    phone = models.CharField(max_length=15, blank=True)
-    address = models.TextField(blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='student')
+    username = models.CharField(max_length=150, unique=True)
     email = models.EmailField(unique=True)
-    
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='student')
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+
+    objects = UserManager()
+
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email', 'role']
 
     def __str__(self):
         return self.username
+
 
 class SchoolSettings(models.Model):
     name = models.CharField(max_length=200)
@@ -60,7 +83,7 @@ class Class(models.Model):
 
 class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, limit_choices_to={'role': 'student'})
-    classes = models.ManyToManyField(Class)
+    classes = models.ManyToManyField(Class, related_name='students')
     parents = models.ManyToManyField(User, related_name='children', limit_choices_to={'role': 'parent'})
     admission_number = models.CharField(max_length=20, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -121,7 +144,7 @@ class Fee(models.Model):
     balance = models.DecimalField(max_digits=10, decimal_places=2)
     date = models.DateField()
     payment_method = models.CharField(max_length=50, blank=True)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'role__in': ['admin', 'staff']})
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'role__in': ('admin', 'staff')})
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -132,7 +155,7 @@ class Announcement(models.Model):
     title = models.CharField(max_length=200)
     content = models.TextField()
     target_roles = models.CharField(max_length=50)  # e.g., 'parent,student'
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'role__in': ['admin', 'teacher']})
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'role__in': ('admin', 'teacher')})
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -195,7 +218,7 @@ class LibraryBorrowing(models.Model):
     borrow_date = models.DateField()
     return_date = models.DateField(null=True, blank=True)
     returned = models.BooleanField(default=False)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'role__in': ['admin', 'staff']})
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'role__in': ('admin', 'staff')})
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -203,7 +226,7 @@ class LibraryBorrowing(models.Model):
         return f"{self.student} - {self.library_item}"
 
 class LeaveApplication(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'role__in': ['student', 'staff']})
+    user = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'role__in': ('student', 'staff')})
     start_date = models.DateField()
     end_date = models.DateField()
     reason = models.TextField()

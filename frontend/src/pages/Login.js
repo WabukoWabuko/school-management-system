@@ -19,19 +19,25 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:8000/api/token/', formData);
+      const response = await axios.post('http://localhost:8000/api/token/', formData, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
       const { access, refresh } = response.data;
       localStorage.setItem('token', access);
       localStorage.setItem('refresh', refresh);
 
-      // Fetch user data to get role
       const userResponse = await axios.get('http://localhost:8000/api/users/me/', {
-        headers: { Authorization: `Bearer ${access}` },
+        headers: {
+          Authorization: `Bearer ${access}`,
+          'Content-Type': 'application/json',
+        },
       });
+
       const user = userResponse.data;
       setUser(user);
 
-      // Redirect based on role
       switch (user.role) {
         case 'admin':
           navigate('/dashboard/admin');
@@ -52,7 +58,11 @@ function Login() {
           navigate('/');
       }
     } catch (err) {
-      setError('Invalid username or password');
+      if (err.response && err.response.status === 401) {
+        setError('Invalid username or password');
+      } else {
+        setError('An error occurred. Please try again.');
+      }
     }
   };
 
