@@ -46,7 +46,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.username
 
 class SchoolSettings(models.Model):
-    name = models.CharField(max_length=200)
+    school_name = models.CharField(max_length=200)
     motto = models.CharField(max_length=200)
     logo = models.CharField(max_length=200, blank=True)  # URL or path
     academic_year = models.IntegerField()
@@ -56,7 +56,7 @@ class SchoolSettings(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.name
+        return self.school_name
 
 class Subject(models.Model):
     name = models.CharField(max_length=100)
