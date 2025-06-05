@@ -45,7 +45,7 @@ router.register(r'leave-applications', LeaveApplicationViewSet)
 router.register(r'report-cards', ReportCardViewSet)
 router.register(r'parent-feedback', ParentFeedbackViewSet)
 router.register(r'audit-logs', AuditLogViewSet)
-router.register(r'school-settings', SchoolSettingsViewSet)
+router.register(r'school-settings', SchoolSettingsViewSet, basename='school-settings')
 
 # Define specific paths first, then include router URLs
 urlpatterns = [
