@@ -8,8 +8,15 @@ function Contact() {
         <div className="col-md-6 mb-4">
           <h3>Get in Touch</h3>
           <p><strong>Address:</strong> 123 Education Lane, Nairobi, Kenya</p>
-          <p><strong>Phone:</strong> +254 700 123 456</p>
+          <p><strong>Phone:</strong> +254 700 123 456 / +254 722 456 789</p>
           <p><strong>Email:</strong> info@eliteacademy.co.ke</p>
+          <p><strong>Office Hours:</strong> Mon - Fri: 8:00 AM - 5:00 PM</p>
+          <p><strong>Social Media:</strong></p>
+          <ul>
+            <li>Facebook: <a href="#">EliteAcademyKenya</a></li>
+            <li>Instagram: <a href="#">@eliteacademy.ke</a></li>
+            <li>Twitter: <a href="#">@EliteAcademyKe</a></li>
+          </ul>
         </div>
         <div className="col-md-6">
           <h3>Send a Message</h3>
@@ -25,7 +32,7 @@ function Contact() {
             <label htmlFor="message" className="form-label">Message</label>
             <textarea className="form-control" id="message" rows="4"></textarea>
           </div>
-          <button type="button" className="btn btn-primary">Send</button>
+          <button type="button" className="btn btn-primary w-100">Send</button>
         </div>
       </div>
     </div>
@@ -33,3 +40,4 @@ function Contact() {
 }
 
 export default Contact;
+

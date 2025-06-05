@@ -1,40 +1,69 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState, useContext, useCallback, useRef } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../../context/AuthContext';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Chart from 'chart.js/auto';
+import {
+  Tabs, Tab, Card, Button, Form, Table, Spinner, Modal,
+} from 'react-bootstrap';
 
 function AdminDashboard() {
   const { user } = useContext(AuthContext);
-  console.log('AdminDashboard: Rendered, user:', user);
+  const [activeTab, setActiveTab] = useState('users');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [modalData, setModalData] = useState({ type: '', data: {} });
 
   const [users, setUsers] = useState([]);
   const [classes, setClasses] = useState([]);
   const [subjects, setSubjects] = useState([]);
+  const [exams, setExams] = useState([]);
+  const [grades, setGrades] = useState([]);
+  const [attendance, setAttendance] = useState([]);
+  const [fees, setFees] = useState([]);
+  const [announcements, setAnnouncements] = useState([]);
+  const [messages, setMessages] = useState([]);
+  const [timetables, setTimetables] = useState([]);
+  const [homework, setHomework] = useState([]);
+  const [libraryItems, setLibraryItems] = useState([]);
+  const [borrowings, setBorrowings] = useState([]);
+  const [leaveApps, setLeaveApps] = useState([]);
+  const [reportCards, setReportCards] = useState([]);
+  const [parentFeedback, setParentFeedback] = useState([]);
+  const [auditLogs, setAuditLogs] = useState([]);
   const [settings, setSettings] = useState({});
-  const [error, setError] = useState('');
 
-  const [userFormData, setUserFormData] = useState({
-    username: '',
-    email: '',
-    role: 'student',
-    password: '',
-  });
-  const [classFormData, setClassFormData] = useState({
-    name: '',
-    teacher: '',
-  });
-  const [subjectFormData, setSubjectFormData] = useState({
-    name: '',
-    code: '',
-  });
-  const [settingsFormData, setSettingsFormData] = useState({
-    schoolName: '',
-    academicYear: '',
-  });
+  const chartRef = useRef(null);
+  const chartInstance = useRef(null);
+
+  // Mapping of activeTab to state and setters
+  const tabDataMap = {
+    users: { data: users, setter: setUsers },
+    classes: { data: classes, setter: setClasses },
+    subjects: { data: subjects, setter: setSubjects },
+    exams: { data: exams, setter: setExams },
+    grades: { data: grades, setter: setGrades },
+    attendance: { data: attendance, setter: setAttendance },
+    fees: { data: fees, setter: setFees },
+    announcements: { data: announcements, setter: setAnnouncements },
+    messages: { data: messages, setter: setMessages },
+    timetables: { data: timetables, setter: setTimetables },
+    homework: { data: homework, setter: setHomework },
+    libraryItems: { data: libraryItems, setter: setLibraryItems },
+    borrowings: { data: borrowings, setter: setBorrowings },
+    leaveApps: { data: leaveApps, setter: setLeaveApps },
+    reportCards: { data: reportCards, setter: setReportCards },
+    parentFeedback: { data: parentFeedback, setter: setParentFeedback },
+    auditLogs: { data: auditLogs, setter: setAuditLogs },
+    settings: { data: settings, setter: setSettings },
+  };
 
   const showToast = (message, type = 'error') => {
-    const options = {
+    toast[type](message, {
       position: 'top-right',
       autoClose: 5000,
       hideProgressBar: false,
@@ -42,466 +71,375 @@ function AdminDashboard() {
       pauseOnHover: true,
       draggable: true,
       theme: 'light',
-    };
-    if (type === 'success') {
-      toast.success(message, options);
-    } else {
-      toast.error(message, options);
-    }
+    });
   };
 
-  useEffect(() => {
-    console.log('AdminDashboard: useEffect triggered');
-    fetchUsers();
-    fetchClasses();
-    fetchSubjects();
-    fetchSettings();
+  const debounce = (func, delay) => {
+    let timeoutId;
+    return (...args) => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => func(...args), delay);
+    };
+  };
+
+  const fetchData = useCallback(async (endpoint, setter, errorMsg) => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('No authentication token found');
+      const response = await axios.get(`http://localhost:8000/api/${endpoint}/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setter(response.data);
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || err.message || errorMsg;
+      setError(errorMessage);
+      showToast(errorMessage);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const fetchUsers = async () => {
+  useEffect(() => {
+    fetchData('users', setUsers, 'Failed to fetch users.');
+    fetchData('classes', setClasses, 'Failed to fetch classes.');
+    fetchData('subjects', setSubjects, 'Failed to fetch subjects.');
+    fetchData('exams', setExams, 'Failed to fetch exams.');
+    fetchData('grades', setGrades, 'Failed to fetch grades.');
+    fetchData('attendance', setAttendance, 'Failed to fetch attendance.');
+    fetchData('fees', setFees, 'Failed to fetch fees.');
+    fetchData('announcements', setAnnouncements, 'Failed to fetch announcements.');
+    fetchData('messages', setMessages, 'Failed to fetch messages.');
+    fetchData('timetables', setTimetables, 'Failed to fetch timetables.');
+    fetchData('homework', setHomework, 'Failed to fetch homework.');
+    fetchData('library-items', setLibraryItems, 'Failed to fetch library items.');
+    fetchData('library-borrowings', setBorrowings, 'Failed to fetch borrowings.');
+    fetchData('leave-applications', setLeaveApps, 'Failed to fetch leave applications.');
+    fetchData('report-cards', setReportCards, 'Failed to fetch report cards.');
+    fetchData('parent-feedback', setParentFeedback, 'Failed to fetch parent feedback.');
+    fetchData('audit-logs', setAuditLogs, 'Failed to fetch audit logs.');
+    fetchData('school-settings', setSettings, 'Failed to fetch settings.');
+  }, [fetchData]);
+
+  useEffect(() => {
+    const handler = debounce((query) => setDebouncedSearch(query), 500);
+    handler(searchQuery);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    if (debouncedSearch && activeTab !== 'analytics') {
+      const { setter } = tabDataMap[activeTab];
+      fetchData(`${activeTab}?search=${debouncedSearch}`, setter, `Failed to search ${activeTab}.`);
+    }
+  }, [debouncedSearch, activeTab, fetchData]);
+
+  useEffect(() => {
+    if (chartInstance.current) {
+      chartInstance.current.destroy();
+    }
+    const ctx = chartRef.current.getContext('2d');
+    chartInstance.current = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: classes.map(c => c.name),
+        datasets: [{
+          label: 'Students per Class',
+          data: classes.map(c => c.students?.length || 0),
+          backgroundColor: 'rgba(75, 192, 192, 0.2)',
+          borderColor: 'rgba(75, 192, 192, 1)',
+          borderWidth: 1,
+        }],
+      },
+      options: { scales: { y: { beginAtZero: true } } },
+    });
+    return () => chartInstance.current?.destroy();
+  }, [classes]);
+
+  const handleCreate = async (data, endpoint, successMsg) => {
     try {
-      setError('');
+      setLoading(true);
       const token = localStorage.getItem('token');
-      console.log('AdminDashboard: Token for fetchUsers:', token);
       if (!token) throw new Error('No authentication token found');
-      const response = await axios.get('http://localhost:8000/api/users/', {
+      await axios.post(`http://localhost:8000/api/${endpoint}/`, data, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log('AdminDashboard: Users fetched:', response.data);
-      setUsers(response.data);
+      const { setter } = tabDataMap[endpoint];
+      fetchData(endpoint, setter, `Failed to refresh ${endpoint}.`);
+      showToast(successMsg, 'success');
+      setShowModal(false);
     } catch (err) {
-      const errorMessage = err.response?.data?.message || err.message || 'O wise one, an unforeseen error has clouded the retrieval of users. Seek guidance from the logs.';
-      setError(errorMessage);
-      console.error('Fetch users error:', err.response?.data || err.message);
-      showToast(errorMessage);
+      showToast(err.response?.data?.message || err.message || `Failed to create ${endpoint}.`);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const fetchClasses = async () => {
+  const handleUpdate = async (data, endpoint, successMsg) => {
     try {
-      setError('');
+      setLoading(true);
       const token = localStorage.getItem('token');
-      console.log('AdminDashboard: Token for fetchClasses:', token);
       if (!token) throw new Error('No authentication token found');
-      const response = await axios.get('http://localhost:8000/api/classes/', {
+      await axios.put(`http://localhost:8000/api/${endpoint}/`, data, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log('AdminDashboard: Classes fetched:', response.data);
-      setClasses(response.data);
+      const { setter } = tabDataMap[endpoint];
+      fetchData(endpoint, setter, `Failed to refresh ${endpoint}.`);
+      showToast(successMsg, 'success');
+      setShowModal(false);
     } catch (err) {
-      const errorMessage = err.response?.data?.message || err.message || 'O seeker of knowledge, the classes you seek are lost in the ether. Consult the logs for enlightenment.';
-      setError(errorMessage);
-      console.error('Fetch classes error:', err.response?.data || err.message);
-      showToast(errorMessage);
+      showToast(err.response?.data?.message || err.message || `Failed to update ${endpoint}.`);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const fetchSubjects = async () => {
-    try {
-      setError('');
-      const token = localStorage.getItem('token');
-      console.log('AdminDashboard: Token for fetchSubjects:', token);
-      if (!token) throw new Error('No authentication token found');
-      const response = await axios.get('http://localhost:8000/api/subjects/', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      console.log('AdminDashboard: Subjects fetched:', response.data);
-      setSubjects(response.data);
-    } catch (err) {
-      const errorMessage = err.response?.data?.message || err.message || 'O guardian of wisdom, the subjects remain shrouded in mystery. Seek the logs.';
-      setError(errorMessage);
-      console.error('Fetch subjects error:', err.response?.data || err.message);
-      showToast(errorMessage);
-    }
-  };
-
-  const fetchSettings = async () => {
-    try {
-      setError('');
-      const token = localStorage.getItem('token');
-      console.log('AdminDashboard: Token for fetchSettings:', token);
-      if (!token) throw new Error('No authentication token found');
-      const response = await axios.get('http://localhost:8000/api/school-settings/', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      console.log('AdminDashboard: Settings fetched:', response.data);
-      setSettings(response.data);
-      setSettingsFormData(response.data);
-    } catch (err) {
-      const errorMessage = err.response?.data?.message || err.message || 'O wise one, the settings elude us. The logs hold the key to this enigma.';
-      setError(errorMessage);
-      console.error('Fetch settings error:', err.response?.data || err.message);
-      showToast(errorMessage);
-    }
-  };
-
-  const handleInputChange = (e, formType) => {
-    const { name, value } = e.target;
-    if (formType === 'user') setUserFormData({ ...userFormData, [name]: value });
-    if (formType === 'class') setClassFormData({ ...classFormData, [name]: value });
-    if (formType === 'subject') setSubjectFormData({ ...subjectFormData, [name]: value });
-    if (formType === 'settings') setSettingsFormData({ ...settingsFormData, [name]: value });
-  };
-
-  const handleCreateUser = async (e) => {
-    e.preventDefault();
-    try {
-      setError('');
-      const token = localStorage.getItem('token');
-      console.log('AdminDashboard: Token for createUser:', token);
-      if (!token) throw new Error('No authentication token found');
-      const response = await axios.post('http://localhost:8000/api/users/', userFormData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      console.log('AdminDashboard: User created:', response.data);
-      fetchUsers();
-      setUserFormData({ username: '', email: '', role: 'student', password: '' });
-      showToast('A new soul has been welcomed into the academy with ancient wisdom.', 'success');
-    } catch (err) {
-      const errorMessage = err.response?.data?.message || err.message || 'O guardian of the realm, the creation falters. Verify your offerings and seek the logs.';
-      setError(errorMessage);
-      console.error('Create user error:', err.response?.data || err.message);
-      showToast(errorMessage);
-    }
-  };
-
-  const handleCreateClass = async (e) => {
-    e.preventDefault();
-    try {
-      setError('');
-      const token = localStorage.getItem('token');
-      console.log('AdminDashboard: Token for createClass:', token);
-      if (!token) throw new Error('No authentication token found');
-      const response = await axios.post('http://localhost:8000/api/classes/', classFormData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      console.log('AdminDashboard: Class created:', response.data);
-      fetchClasses();
-      setClassFormData({ name: '', teacher: '' });
-      showToast('A new class has been forged in the crucible of knowledge.', 'success');
-    } catch (err) {
-      const errorMessage = err.response?.data?.message || err.message || 'O seeker, the class creation is thwarted. The logs reveal the path.';
-      setError(errorMessage);
-      console.error('Create class error:', err.response?.data || err.message);
-      showToast(errorMessage);
-    }
-  };
-
-  const handleCreateSubject = async (e) => {
-    e.preventDefault();
-    try {
-      setError('');
-      const token = localStorage.getItem('token');
-      console.log('AdminDashboard: Token for createSubject:', token);
-      if (!token) throw new Error('No authentication token found');
-      const response = await axios.post('http://localhost:8000/api/subjects/', subjectFormData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      console.log('AdminDashboard: Subject created:', response.data);
-      fetchSubjects();
-      setSubjectFormData({ name: '', code: '' });
-      showToast('A new subject has been inscribed in the annals of wisdom.', 'success');
-    } catch (err) {
-      const errorMessage = err.response?.data?.message || err.message || 'O wise one, the subject eludes creation. Consult the logs.';
-      setError(errorMessage);
-      console.error('Create subject error:', err.response?.data || err.message);
-      showToast(errorMessage);
-    }
-  };
-
-  const handleUpdateSettings = async (e) => {
-    e.preventDefault();
-    try {
-      setError('');
-      const token = localStorage.getItem('token');
-      console.log('AdminDashboard: Token for updateSettings:', token);
-      if (!token) throw new Error('No authentication token found');
-      const response = await axios.put('http://localhost:8000/api/school-settings/', settingsFormData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      console.log('AdminDashboard: Settings updated:', response.data);
-      fetchSettings();
-      showToast('The settings have been imbued with the wisdom of the ages. May your institution prosper.', 'success');
-    } catch (err) {
-      const errorMessage = err.response?.data?.message || err.message || 'A shadow falls upon the update. The logs hold the answer.';
-      setError(errorMessage);
-      console.error('Update settings error:', err.response?.data || err.message);
-      showToast(errorMessage);
-    }
-  };
-
-  const handleDeleteUser = async (id) => {
-    if (window.confirm('O wise administrator, are you certain you wish to remove this user from the realm?')) {
+  const handleDelete = async (id, endpoint, successMsg) => {
+    if (window.confirm(`Are you sure you want to delete this ${endpoint.slice(0, -1)}?`)) {
       try {
-        setError('');
+        setLoading(true);
         const token = localStorage.getItem('token');
-        console.log('AdminDashboard: Token for deleteUser:', token);
         if (!token) throw new Error('No authentication token found');
-        await axios.delete(`http://localhost:8000/api/users/${id}/`, {
+        await axios.delete(`http://localhost:8000/api/${endpoint}/${id}/`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        fetchUsers();
-        showToast('The user has been released from this domain with the blessing of wisdom.', 'success');
+        const { setter } = tabDataMap[endpoint];
+        fetchData(endpoint, setter, `Failed to refresh ${endpoint}.`);
+        showToast(successMsg, 'success');
       } catch (err) {
-        const errorMessage = err.response?.data?.message || err.message || 'O guardian, the deletion has faltered. Seek the logs for clarity.';
-        setError(errorMessage);
-        console.error('Delete user error:', err.response?.data || err.message);
-        showToast(errorMessage);
+        showToast(err.response?.data?.message || err.message || `Failed to delete ${endpoint}.`);
+      } finally {
+        setLoading(false);
       }
     }
   };
 
-  if (!user) {
-    console.error('AdminDashboard: No user object from AuthContext');
-    return <div className="alert alert-danger m-3">Error: User not authenticated</div>;
-  }
+  if (!user) return <div className="alert alert-danger m-3">Error: User not authenticated</div>;
+
+  const renderTabContent = () => {
+    const { data } = tabDataMap[activeTab];
+    const formData = {
+      users: { username: '', email: '', role: 'student', password: '' },
+      classes: { name: '', teacher: '' },
+      subjects: { name: '', code: '' },
+      exams: { name: '', term: '', year: '', maxMarks: 100 },
+      grades: { student: '', subject: '', exam: '', marks: 0, remarks: '' },
+      attendance: { student: '', classInstance: '', date: '', present: false, remarks: '' },
+      fees: { student: '', amount: 0, balance: 0, date: '', paymentMethod: '' },
+      announcements: { title: '', content: '', targetRoles: '' },
+      messages: { receiver: '', content: '' },
+      timetables: { classInstance: '', subject: '', day: '', startTime: '', endTime: '', room: '' },
+      homework: { classInstance: '', subject: '', description: '', dueDate: '', completed: false },
+      libraryItems: { title: '', itemType: '', isbn: '', status: 'available' },
+      borrowings: { libraryItem: '', student: '', borrowDate: '', returnDate: '', returned: false },
+      leaveApps: { user: '', startDate: '', endDate: '', reason: '', status: 'pending' },
+      reportCards: { student: '', term: '', year: '', overallGrade: '', remarks: '' },
+      parentFeedback: { parent: '', content: '' },
+      auditLogs: { user: '', action: '', modelName: '', objectId: '', details: '' },
+      settings: { schoolName: '', academicYear: '', motto: '', currentTerm: '', logo: '' },
+    }[activeTab];
+
+    if (!data || data.length === 0) {
+      return <p>No data available for {activeTab}.</p>;
+    }
+
+    return (
+      <div className="p-3">
+        <Button
+          variant="primary"
+          onClick={() => {
+            setModalData({ type: 'create', data: formData });
+            setShowModal(true);
+          }}
+        >
+          Add {activeTab.charAt(0).toUpperCase() + activeTab.slice(1, -1)}
+        </Button>
+        <Modal show={showModal} onHide={() => setShowModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>
+              {modalData.type === 'create' ? 'Create' : 'Edit'}{' '}
+              {activeTab.charAt(0).toUpperCase() + activeTab.slice(1, -1)}
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form
+              onSubmit={(e) => {
+                e.preventDefault();
+                modalData.type === 'create'
+                  ? handleCreate(modalData.data, activeTab, 'Created successfully.')
+                  : handleUpdate(modalData.data, activeTab, 'Updated successfully.');
+              }}
+            >
+              {Object.keys(formData).map((key) => (
+                <Form.Group key={key} className="mb-3">
+                  <Form.Label>{key.charAt(0).toUpperCase() + key.slice(1)}</Form.Label>
+                  <Form.Control
+                    type={
+                      key.includes('password')
+                        ? 'password'
+                        : key.includes('date')
+                        ? 'date'
+                        : 'text'
+                    }
+                    value={modalData.data[key] || ''}
+                    onChange={(e) =>
+                      setModalData({
+                        ...modalData,
+                        data: { ...modalData.data, [key]: e.target.value },
+                      })
+                    }
+                  />
+                </Form.Group>
+              ))}
+              <Button variant="primary" type="submit" disabled={loading}>
+                {loading ? (
+                  <Spinner animation="border" size="sm" />
+                ) : modalData.type === 'create' ? (
+                  'Create'
+                ) : (
+                  'Save'
+                )}
+              </Button>
+            </Form>
+          </Modal.Body>
+        </Modal>
+        {loading ? (
+          <Spinner animation="border" />
+        ) : error ? (
+          <div className="alert alert-danger">{error}</div>
+        ) : (
+          <Table striped bordered hover>
+            <thead>
+              <tr>
+                {Object.keys(data[0] || {}).map((key) => (
+                  <th key={key}>{key}</th>
+                ))}
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((item) => (
+                <tr key={item.id}>
+                  {Object.values(item).map((val, i) => (
+                    <td key={i}>{String(val)}</td>
+                  ))}
+                  <td>
+                    <Button
+                      variant="warning"
+                      size="sm"
+                      onClick={() => {
+                        setModalData({ type: 'edit', data: item });
+                        setShowModal(true);
+                      }}
+                    >
+                      Edit
+                    </Button>{' '}
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      onClick={() =>
+                        handleDelete(item.id, activeTab, 'Deleted successfully.')
+                      }
+                    >
+                      Delete
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        )}
+      </div>
+    );
+  };
 
   return (
-    <div className="container py-5">
+    <div className="container-fluid p-4" style={{ maxHeight: '90vh', overflowY: 'auto' }}>
       <ToastContainer />
-      <h2 className="mb-4">Admin Dashboard</h2>
-      <div className="card shadow mb-4">
-        <div className="card-body">
-          <h3 className="card-title mb-4">Welcome, {user?.username || 'Admin'}!</h3>
-          <p>Manage users, classes, subjects, and settings from this dashboard.</p>
-        </div>
-      </div>
-      {error && <div className="alert alert-danger m-3">{error}</div>}
-      <div className="card shadow mb-4">
-        <div className="card-body">
-          <h3 className="card-title mb-4">Manage Users</h3>
-          <form onSubmit={handleCreateUser}>
-            <div className="mb-3">
-              <label htmlFor="username" className="form-label">Username</label>
-              <input
-                type="text"
-                className="form-control"
-                id="username"
-                name="username"
-                value={userFormData.username}
-                onChange={(e) => handleInputChange(e, 'user')}
-                required
-              />
-            </div>
-            <div className="mb-3">
-              <label htmlFor="email" className="form-label">Email</label>
-              <input
-                type="email"
-                className="form-control"
-                id="email"
-                name="email"
-                value={userFormData.email}
-                onChange={(e) => handleInputChange(e, 'user')}
-                required
-              />
-            </div>
-            <div className="mb-3">
-              <label htmlFor="role" className="form-label">Role</label>
-              <select
-                className="form-select"
-                id="role"
-                name="role"
-                value={userFormData.role}
-                onChange={(e) => handleInputChange(e, 'user')}
-              >
-                <option value="admin">Admin</option>
-                <option value="teacher">Teacher</option>
-                <option value="parent">Parent</option>
-                <option value="student">Student</option>
-                <option value="staff">Staff</option>
-              </select>
-            </div>
-            <div className="mb-3">
-              <label htmlFor="password" className="form-label">Password</label>
-              <input
-                type="password"
-                className="form-control"
-                id="password"
-                name="password"
-                value={userFormData.password}
-                onChange={(e) => handleInputChange(e, 'user')}
-                required
-              />
-            </div>
-            <button type="submit" className="btn btn-primary">Create User</button>
-          </form>
-          {users.length === 0 ? (
-            <p className="text-muted mt-3">No users found.</p>
-          ) : (
-            <table className="table table-striped mt-3">
-              <thead>
-                <tr>
-                  <th>Username</th>
-                  <th>Role</th>
-                  <th>Email</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((user) => (
-                  <tr key={user.id}>
-                    <td>{user.username}</td>
-                    <td>{user.role}</td>
-                    <td>{user.email}</td>
-                    <td>
-                      <button
-                        className="btn btn-danger btn-sm"
-                        onClick={() => handleDeleteUser(user.id)}
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      </div>
-      <div className="card shadow mb-4">
-        <div className="card-body">
-          <h3 className="card-title mb-4">Manage Classes</h3>
-          <form onSubmit={handleCreateClass}>
-            <div className="mb-3">
-              <label htmlFor="name" className="form-label">Class Name</label>
-              <input
-                type="text"
-                className="form-control"
-                id="name"
-                name="name"
-                value={classFormData.name}
-                onChange={(e) => handleInputChange(e, 'class')}
-                required
-              />
-            </div>
-            <div className="mb-3">
-              <label htmlFor="teacher" className="form-label">Teacher</label>
-              <input
-                type="text"
-                className="form-control"
-                id="teacher"
-                name="teacher"
-                value={classFormData.teacher}
-                onChange={(e) => handleInputChange(e, 'class')}
-                required
-              />
-            </div>
-            <button type="submit" className="btn btn-primary">Create Class</button>
-          </form>
-          {classes.length === 0 ? (
-            <p className="text-muted mt-3">No classes found.</p>
-          ) : (
-            <table className="table table-striped mt-3">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Teacher</th>
-                </tr>
-              </thead>
-              <tbody>
-                {classes.map((cls) => (
-                  <tr key={cls.id}>
-                    <td>{cls.name}</td>
-                    <td>{cls.teacher}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      </div>
-      <div className="card shadow mb-4">
-        <div className="card-body">
-          <h3 className="card-title mb-4">Manage Subjects</h3>
-          <form onSubmit={handleCreateSubject}>
-            <div className="mb-3">
-              <label htmlFor="name" className="form-label">Subject Name</label>
-              <input
-                type="text"
-                className="form-control"
-                id="name"
-                name="name"
-                value={subjectFormData.name}
-                onChange={(e) => handleInputChange(e, 'subject')}
-                required
-              />
-            </div>
-            <div className="mb-3">
-              <label htmlFor="code" className="form-label">Subject Code</label>
-              <input
-                type="text"
-                className="form-control"
-                id="code"
-                name="code"
-                value={subjectFormData.code}
-                onChange={(e) => handleInputChange(e, 'subject')}
-                required
-              />
-            </div>
-            <button type="submit" className="btn btn-primary">Create Subject</button>
-          </form>
-          {subjects.length === 0 ? (
-            <p className="text-muted mt-3">No subjects found.</p>
-          ) : (
-            <table className="table table-striped mt-3">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Code</th>
-                </tr>
-              </thead>
-              <tbody>
-                {subjects.map((subject) => (
-                  <tr key={subject.id}>
-                    <td>{subject.name}</td>
-                    <td>{subject.code}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      </div>
-      <div className="card shadow mb-4">
-        <div className="card-body">
-          <h3 className="card-title mb-4">Manage School Settings</h3>
-          <form onSubmit={handleUpdateSettings}>
-            <div className="mb-3">
-              <label htmlFor="schoolName" className="form-label">School Name</label>
-              <input
-                type="text"
-                className="form-control"
-                id="schoolName"
-                name="schoolName"
-                value={settingsFormData.schoolName}
-                onChange={(e) => handleInputChange(e, 'settings')}
-                required
-              />
-            </div>
-            <div className="mb-3">
-              <label htmlFor="academicYear" className="form-label">Academic Year</label>
-              <input
-                type="text"
-                className="form-control"
-                id="academicYear"
-                name="academicYear"
-                value={settingsFormData.academicYear}
-                onChange={(e) => handleInputChange(e, 'settings')}
-                required
-              />
-            </div>
-            <button type="submit" className="btn btn-primary">Update Settings</button>
-          </form>
-          {Object.keys(settings).length === 0 ? (
-            <p className="text-muted mt-3">No settings found.</p>
-          ) : (
-            <div className="mt-3">
-              <p><strong>School Name:</strong> {settings.schoolName}</p>
-              <p><strong>Academic Year:</strong> {settings.academicYear}</p>
-            </div>
-          )}
-        </div>
-      </div>
+      <Card className="shadow mb-4">
+        <Card.Body>
+          <h2 className="mb-3">Admin Dashboard - Welcome, {user?.username || 'Admin'}!</h2>
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <Form.Control
+              type="text"
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{ maxWidth: '300px' }}
+            />
+            <Button
+              variant="secondary"
+              onClick={() => {
+                const { setter } = tabDataMap[activeTab];
+                fetchData(activeTab, setter, 'Failed to refresh.');
+              }}
+            >
+              Refresh
+            </Button>
+          </div>
+          <Tabs activeKey={activeTab} onSelect={(k) => setActiveTab(k)} className="mb-3">
+            <Tab eventKey="users" title="Users">
+              {renderTabContent()}
+            </Tab>
+            <Tab eventKey="classes" title="Classes">
+              {renderTabContent()}
+            </Tab>
+            <Tab eventKey="subjects" title="Subjects">
+              {renderTabContent()}
+            </Tab>
+            <Tab eventKey="exams" title="Exams">
+              {renderTabContent()}
+            </Tab>
+            <Tab eventKey="grades" title="Grades">
+              {renderTabContent()}
+            </Tab>
+            <Tab eventKey="attendance" title="Attendance">
+              {renderTabContent()}
+            </Tab>
+            <Tab eventKey="fees" title="Fees">
+              {renderTabContent()}
+            </Tab>
+            <Tab eventKey="announcements" title="Announcements">
+              {renderTabContent()}
+            </Tab>
+            <Tab eventKey="messages" title="Messages">
+              {renderTabContent()}
+            </Tab>
+            <Tab eventKey="timetables" title="Timetables">
+              {renderTabContent()}
+            </Tab>
+            <Tab eventKey="homework" title="Homework">
+              {renderTabContent()}
+            </Tab>
+            <Tab eventKey="libraryItems" title="Library Items">
+              {renderTabContent()}
+            </Tab>
+            <Tab eventKey="borrowings" title="Borrowings">
+              {renderTabContent()}
+            </Tab>
+            <Tab eventKey="leaveApps" title="Leave Applications">
+              {renderTabContent()}
+            </Tab>
+            <Tab eventKey="reportCards" title="Report Cards">
+              {renderTabContent()}
+            </Tab>
+            <Tab eventKey="parentFeedback" title="Parent Feedback">
+              {renderTabContent()}
+            </Tab>
+            <Tab eventKey="auditLogs" title="Audit Logs">
+              {renderTabContent()}
+            </Tab>
+            <Tab eventKey="settings" title="Settings">
+              {renderTabContent()}
+            </Tab>
+            <Tab eventKey="analytics" title="Analytics">
+              <div className="p-3">
+                <h3>School Analytics</h3>
+                <canvas ref={chartRef} style={{ maxHeight: '300px' }} />
+              </div>
+            </Tab>
+          </Tabs>
+        </Card.Body>
+      </Card>
     </div>
   );
 }
