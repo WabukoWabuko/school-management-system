@@ -242,15 +242,33 @@ class AuditLogViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, IsAdminUser]
 
 class SchoolSettingsViewSet(viewsets.ModelViewSet):
-    queryset = SchoolSettings.objects.first() or SchoolSettings.objects.create(school_name='Elite Academy', academic_year=str(timezone.now().year), motto='', current_term='Term 1', logo='')
     serializer_class = SchoolSettingsSerializer
     permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def get_queryset(self):
+        settings = SchoolSettings.objects.first()
+        if not settings:
+            settings = SchoolSettings.objects.create(
+                school_name='Elite Academy',
+                academic_year=str(timezone.now().year),
+                motto='',
+                current_term='Term 1',
+                logo=''
+            )
+            print("SchoolSettings: Created default settings due to absence")
+        return SchoolSettings.objects.all()
 
     def list(self, request, *args, **kwargs):
         try:
             settings = SchoolSettings.objects.first()
             if not settings:
-                settings = SchoolSettings.objects.create(school_name='Elite Academy', academic_year=str(timezone.now().year), motto='', current_term='Term 1', logo='')
+                settings = SchoolSettings.objects.create(
+                    school_name='Elite Academy',
+                    academic_year=str(timezone.now().year),
+                    motto='',
+                    current_term='Term 1',
+                    logo=''
+                )
                 print("SchoolSettings: Created default settings due to absence")
             serializer = self.get_serializer(settings)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -261,7 +279,13 @@ class SchoolSettingsViewSet(viewsets.ModelViewSet):
         try:
             settings = SchoolSettings.objects.first()
             if not settings:
-                settings = SchoolSettings.objects.create(school_name='Elite Academy', academic_year=str(timezone.now().year), motto='', current_term='Term 1', logo='')
+                settings = SchoolSettings.objects.create(
+                    school_name='Elite Academy',
+                    academic_year=str(timezone.now().year),
+                    motto='',
+                    current_term='Term 1',
+                    logo=''
+                )
                 print("SchoolSettings: Created default settings due to absence")
             serializer = self.get_serializer(settings)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -272,7 +296,13 @@ class SchoolSettingsViewSet(viewsets.ModelViewSet):
         try:
             settings = SchoolSettings.objects.first()
             if not settings:
-                settings = SchoolSettings.objects.create(school_name='Elite Academy', academic_year=str(timezone.now().year), motto='', current_term='Term 1', logo='')
+                settings = SchoolSettings.objects.create(
+                    school_name='Elite Academy',
+                    academic_year=str(timezone.now().year),
+                    motto='',
+                    current_term='Term 1',
+                    logo=''
+                )
                 print("SchoolSettings: Created default settings due to absence")
             serializer = self.get_serializer(settings, data=request.data, partial=True)
             if serializer.is_valid():
