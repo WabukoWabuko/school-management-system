@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useContext } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../../context/AuthContext';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function AdminDashboard() {
   const { user } = useContext(AuthContext);
@@ -31,6 +33,23 @@ function AdminDashboard() {
     academicYear: '',
   });
 
+  const showToast = (message, type = 'error') => {
+    const options = {
+      position: 'top-right',
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      theme: 'light',
+    };
+    if (type === 'success') {
+      toast.success(message, options);
+    } else {
+      toast.error(message, options);
+    }
+  };
+
   useEffect(() => {
     console.log('AdminDashboard: useEffect triggered');
     fetchUsers();
@@ -54,6 +73,7 @@ function AdminDashboard() {
       const errorMessage = err.response?.data?.message || err.message || 'O wise one, an unforeseen error has clouded the retrieval of users. Seek guidance from the logs.';
       setError(errorMessage);
       console.error('Fetch users error:', err.response?.data || err.message);
+      showToast(errorMessage);
     }
   };
 
@@ -72,6 +92,7 @@ function AdminDashboard() {
       const errorMessage = err.response?.data?.message || err.message || 'O seeker of knowledge, the classes you seek are lost in the ether. Consult the logs for enlightenment.';
       setError(errorMessage);
       console.error('Fetch classes error:', err.response?.data || err.message);
+      showToast(errorMessage);
     }
   };
 
@@ -90,6 +111,7 @@ function AdminDashboard() {
       const errorMessage = err.response?.data?.message || err.message || 'O guardian of wisdom, the subjects remain shrouded in mystery. Seek the logs.';
       setError(errorMessage);
       console.error('Fetch subjects error:', err.response?.data || err.message);
+      showToast(errorMessage);
     }
   };
 
@@ -109,6 +131,7 @@ function AdminDashboard() {
       const errorMessage = err.response?.data?.message || err.message || 'O wise one, the settings elude us. The logs hold the key to this enigma.';
       setError(errorMessage);
       console.error('Fetch settings error:', err.response?.data || err.message);
+      showToast(errorMessage);
     }
   };
 
@@ -133,12 +156,12 @@ function AdminDashboard() {
       console.log('AdminDashboard: User created:', response.data);
       fetchUsers();
       setUserFormData({ username: '', email: '', role: 'student', password: '' });
-      alert('A new soul has been welcomed into the academy with ancient wisdom.');
+      showToast('A new soul has been welcomed into the academy with ancient wisdom.', 'success');
     } catch (err) {
       const errorMessage = err.response?.data?.message || err.message || 'O guardian of the realm, the creation falters. Verify your offerings and seek the logs.';
       setError(errorMessage);
       console.error('Create user error:', err.response?.data || err.message);
-      alert(errorMessage);
+      showToast(errorMessage);
     }
   };
 
@@ -155,12 +178,12 @@ function AdminDashboard() {
       console.log('AdminDashboard: Class created:', response.data);
       fetchClasses();
       setClassFormData({ name: '', teacher: '' });
-      alert('A new class has been forged in the crucible of knowledge.');
+      showToast('A new class has been forged in the crucible of knowledge.', 'success');
     } catch (err) {
       const errorMessage = err.response?.data?.message || err.message || 'O seeker, the class creation is thwarted. The logs reveal the path.';
       setError(errorMessage);
       console.error('Create class error:', err.response?.data || err.message);
-      alert(errorMessage);
+      showToast(errorMessage);
     }
   };
 
@@ -177,12 +200,12 @@ function AdminDashboard() {
       console.log('AdminDashboard: Subject created:', response.data);
       fetchSubjects();
       setSubjectFormData({ name: '', code: '' });
-      alert('A new subject has been inscribed in the annals of wisdom.');
+      showToast('A new subject has been inscribed in the annals of wisdom.', 'success');
     } catch (err) {
       const errorMessage = err.response?.data?.message || err.message || 'O wise one, the subject eludes creation. Consult the logs.';
       setError(errorMessage);
       console.error('Create subject error:', err.response?.data || err.message);
-      alert(errorMessage);
+      showToast(errorMessage);
     }
   };
 
@@ -198,12 +221,12 @@ function AdminDashboard() {
       });
       console.log('AdminDashboard: Settings updated:', response.data);
       fetchSettings();
-      alert('The settings have been imbued with the wisdom of the ages. May your institution prosper.');
+      showToast('The settings have been imbued with the wisdom of the ages. May your institution prosper.', 'success');
     } catch (err) {
       const errorMessage = err.response?.data?.message || err.message || 'A shadow falls upon the update. The logs hold the answer.';
       setError(errorMessage);
       console.error('Update settings error:', err.response?.data || err.message);
-      alert(errorMessage);
+      showToast(errorMessage);
     }
   };
 
@@ -218,12 +241,12 @@ function AdminDashboard() {
           headers: { Authorization: `Bearer ${token}` },
         });
         fetchUsers();
-        alert('The user has been released from this domain with the blessing of wisdom.');
+        showToast('The user has been released from this domain with the blessing of wisdom.', 'success');
       } catch (err) {
         const errorMessage = err.response?.data?.message || err.message || 'O guardian, the deletion has faltered. Seek the logs for clarity.';
         setError(errorMessage);
         console.error('Delete user error:', err.response?.data || err.message);
-        alert(errorMessage);
+        showToast(errorMessage);
       }
     }
   };
@@ -235,6 +258,7 @@ function AdminDashboard() {
 
   return (
     <div className="container py-5">
+      <ToastContainer />
       <h2 className="mb-4">Admin Dashboard</h2>
       <div className="card shadow mb-4">
         <div className="card-body">
