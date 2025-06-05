@@ -34,31 +34,41 @@ function App() {
               <Route
                 path="/dashboard/admin"
                 element={
-                  <ProtectedRoute component={AdminDashboard} allowedRoles={['admin']} />
+                  <ProtectedRoute allowedRoles={['admin']}>
+                    <AdminDashboard />
+                  </ProtectedRoute>
                 }
               />
               <Route
                 path="/dashboard/teacher"
                 element={
-                  <ProtectedRoute component={TeacherDashboard} allowedRoles={['teacher']} />
+                  <ProtectedRoute allowedRoles={['teacher']}>
+                    <TeacherDashboard />
+                  </ProtectedRoute>
                 }
               />
               <Route
                 path="/dashboard/parent"
                 element={
-                  <ProtectedRoute component={ParentDashboard} allowedRoles={['parent']} />
+                  <ProtectedRoute allowedRoles={['parent']}>
+                    <ParentDashboard />
+                  </ProtectedRoute>
                 }
               />
               <Route
                 path="/dashboard/student"
                 element={
-                  <ProtectedRoute component={StudentDashboard} allowedRoles={['student']} />
+                  <ProtectedRoute allowedRoles={['student']}>
+                    <StudentDashboard />
+                  </ProtectedRoute>
                 }
               />
               <Route
                 path="/dashboard/staff"
                 element={
-                  <ProtectedRoute component={StaffDashboard} allowedRoles={['staff']} />
+                  <ProtectedRoute allowedRoles={['staff']}>
+                    <StaffDashboard />
+                  </ProtectedRoute>
                 }
               />
               <Route path="/dashboard" element={<div className="container py-5"><h2>Select a Role Dashboard</h2></div>} />

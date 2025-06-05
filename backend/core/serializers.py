@@ -2,9 +2,28 @@ from rest_framework import serializers
 from .models import User, Subject, Class, Student, Parent, Exam, Grade, Attendance, Fee, Announcement, Message, Timetable, Homework, LibraryItem, LibraryBorrowing, LeaveApplication, ReportCard, ParentFeedback, AuditLog, SchoolSettings
 
 class UserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, required=False)
+
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'role', 'phone', 'address']
+        fields = ['id', 'username', 'email', 'role', 'is_active', 'is_staff', 'is_superuser', 'password']
+
+    def create(self, validated_data):
+        password = validated_data.pop('password', None)
+        user = User(**validated_data)
+        if password:
+            user.set_password(password)  # Hash the password
+        user.save()
+        return user
+
+    def update(self, instance, validated_data):
+        password = validated_data.pop('password', None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        if password:
+            instance.set_password(password)  # Hash the password
+        instance.save()
+        return instance
 
 class SubjectSerializer(serializers.ModelSerializer):
     class Meta:
@@ -12,9 +31,9 @@ class SubjectSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ClassSerializer(serializers.ModelSerializer):
-    subjects = serializers.PrimaryKeyRelatedField(many=True, queryset=Subject.objects.all())
-    teachers = serializers.PrimaryKeyRelatedField(many=True, queryset=User.objects.filter(role='teacher'))
-    created_by = serializers.PrimaryKeyRelatedField(queryset=User.objects.filter(role='admin'))
+    subjects = serializers.PrimaryKeyRelatedField(many=True, queryset=Subject.objects.all(), required=False)
+    teachers = serializers.PrimaryKeyRelatedField(many=True, queryset=User.objects.filter(role='teacher'), required=False)
+    created_by = serializers.PrimaryKeyRelatedField(queryset=User.objects.filter(role='admin'), required=False, allow_null=True)
 
     class Meta:
         model = Class

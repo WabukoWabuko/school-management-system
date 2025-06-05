@@ -1,17 +1,30 @@
 import React, { useContext } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Outlet } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
-function ProtectedRoute({ component: Component, allowedRoles }) {
+const ProtectedRoute = ({ allowedRoles }) => {
   const { user, loading } = useContext(AuthContext);
 
-  if (loading) return <div className="container py-5">Loading...</div>;
+  if (loading) {
+    console.log('ProtectedRoute: Loading...');
+    return <div>Loading...</div>;
+  }
 
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user) {
+    console.log('ProtectedRoute: No user, redirecting to /login');
+    return <Navigate to="/login" replace />;
+  }
 
-  if (!allowedRoles.includes(user.role)) return <Navigate to="/" replace />;
+  const effectiveRole = user.is_superuser ? 'admin' : user.role;
+  console.log('ProtectedRoute: User role:', effectiveRole, 'Allowed roles:', allowedRoles);
 
-  return <Component />;
-}
+  if (allowedRoles && !allowedRoles.includes(effectiveRole)) {
+    console.log('ProtectedRoute: Role not allowed, redirecting to /');
+    return <Navigate to="/" replace />;
+  }
+
+  console.log('ProtectedRoute: Rendering Outlet for', effectiveRole);
+  return <Outlet />;
+};
 
 export default ProtectedRoute;

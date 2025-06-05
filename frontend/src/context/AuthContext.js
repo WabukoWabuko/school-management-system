@@ -8,21 +8,26 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchUser = async () => {
-      const token = localStorage.getItem('token');
-      if (token) {
+    const token = localStorage.getItem('token');
+    if (token) {
+      const fetchUser = async () => {
         try {
           const response = await axios.get('http://localhost:8000/api/users/me/', {
             headers: { Authorization: `Bearer ${token}` },
           });
           setUser(response.data);
         } catch (err) {
+          console.error('Error fetching user:', err);
+          localStorage.removeItem('token');
           setUser(null);
+        } finally {
+          setLoading(false);
         }
-      }
+      };
+      fetchUser();
+    } else {
       setLoading(false);
-    };
-    fetchUser();
+    }
   }, []);
 
   return (

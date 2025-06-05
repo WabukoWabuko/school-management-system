@@ -6,7 +6,7 @@ from .views import (
     SubjectViewSet, 
     ClassViewSet, 
     StudentViewSet, 
-     ParentViewSet,
+    ParentViewSet,
     ExamViewSet, 
     GradeViewSet, 
     AttendanceViewSet, 
@@ -19,9 +19,9 @@ from .views import (
     LibraryBorrowingViewSet,
     LeaveApplicationViewSet, 
     ReportCardViewSet,
-     ParentFeedbackViewSet,
-     AuditLogViewSet,
-     SchoolSettingsViewSet,
+    ParentFeedbackViewSet,
+    AuditLogViewSet,
+    SchoolSettingsViewSet,
 )
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
@@ -29,7 +29,7 @@ router = DefaultRouter()
 router.register(r'users', UserViewSet)
 router.register(r'subjects', SubjectViewSet)
 router.register(r'classes', ClassViewSet)
-router.register(r'studentstudents', StudentViewSet)
+router.register(r'students', StudentViewSet)
 router.register(r'parents', ParentViewSet)
 router.register(r'exams', ExamViewSet)
 router.register(r'grades', GradeViewSet)
@@ -47,10 +47,11 @@ router.register(r'parent-feedback', ParentFeedbackViewSet)
 router.register(r'audit-logs', AuditLogViewSet)
 router.register(r'school-settings', SchoolSettingsViewSet)
 
+# Define specific paths first, then include router URLs
 urlpatterns = [
-    path('', include(router.urls)),
-    path('auth/', include('rest_framework.urls')),
+    path('users/me/', get_current_user, name='current_user'),  # Specific path first
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('users/me/', get_current_user, name='current_user'),
+    path('auth/', include('rest_framework.urls')),
+    path('', include(router.urls)),  # Router URLs last to avoid overriding
 ]

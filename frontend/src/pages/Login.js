@@ -18,6 +18,7 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
     try {
       const response = await axios.post('http://localhost:8000/api/token/', formData, {
         headers: {
@@ -34,11 +35,13 @@ function Login() {
           'Content-Type': 'application/json',
         },
       });
-
       const user = userResponse.data;
       setUser(user);
 
-      switch (user.role) {
+      // Treat superusers as admins for redirection
+      const effectiveRole = user.is_superuser ? 'admin' : user.role;
+
+      switch (effectiveRole) {
         case 'admin':
           navigate('/dashboard/admin');
           break;
@@ -58,10 +61,13 @@ function Login() {
           navigate('/');
       }
     } catch (err) {
+      console.error('Login error details:', err.response ? err.response : err.message);
       if (err.response && err.response.status === 401) {
-        setError('Invalid username or password');
+        setError('Invalid username or password. Please try again.');
+      } else if (err.response && err.response.status === 404) {
+        setError('User profile endpoint (/api/users/me/) not found. Please ensure the backend is running and configured correctly.');
       } else {
-        setError('An error occurred. Please try again.');
+        setError('An error occurred during login. Check the console for details.');
       }
     }
   };

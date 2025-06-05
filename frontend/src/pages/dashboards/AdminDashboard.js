@@ -1,7 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import axios from 'axios';
+import { AuthContext } from '../../context/AuthContext';
 
 function AdminDashboard() {
+  const { user } = useContext(AuthContext);
+  console.log('AdminDashboard: Component mounted, user:', user); // Moved outside useEffect
   const [users, setUsers] = useState([]);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
@@ -13,17 +16,18 @@ function AdminDashboard() {
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, []); // No dependency on 'user' needed here
 
   const fetchUsers = async () => {
     try {
+      setError('');
       const token = localStorage.getItem('token');
       const response = await axios.get('http://localhost:8000/api/users/', {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUsers(response.data);
     } catch (err) {
-      setError('Failed to fetch users');
+      setError(err.response?.data?.detail || 'Failed to fetch users. Please try again.');
     }
   };
 
@@ -34,6 +38,7 @@ function AdminDashboard() {
   const handleCreateUser = async (e) => {
     e.preventDefault();
     try {
+      setError('');
       const token = localStorage.getItem('token');
       await axios.post('http://localhost:8000/api/users/', formData, {
         headers: { Authorization: `Bearer ${token}` },
@@ -41,25 +46,34 @@ function AdminDashboard() {
       fetchUsers();
       setFormData({ username: '', email: '', role: 'student', password: '' });
     } catch (err) {
-      setError('Failed to create user');
+      setError(err.response?.data?.detail || 'Failed to create user. Please check the form data.');
     }
   };
 
   const handleDeleteUser = async (id) => {
-    try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:8000/api/users/${id}/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      fetchUsers();
-    } catch (err) {
-      setError('Failed to delete user');
+    if (window.confirm('Are you sure you want to delete this user?')) {
+      try {
+        setError('');
+        const token = localStorage.getItem('token');
+        await axios.delete(`http://localhost:8000/api/users/${id}/`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        fetchUsers();
+      } catch (err) {
+        setError(err.response?.data?.detail || 'Failed to delete user. Please try again.');
+      }
     }
   };
 
   return (
     <div className="container py-5">
       <h2 className="mb-4">Admin Dashboard</h2>
+      <div className="card shadow mb-4">
+        <div className="card-body">
+          <h3 className="card-title mb-4">Welcome, {user?.username || 'Admin'}!</h3>
+          <p>Manage users, classes, and settings from this dashboard.</p>
+        </div>
+      </div>
       {error && <div className="alert alert-danger">{error}</div>}
       <div className="card shadow mb-4">
         <div className="card-body">
@@ -124,34 +138,44 @@ function AdminDashboard() {
       <div className="card shadow">
         <div className="card-body">
           <h3 className="card-title mb-4">Manage Users</h3>
-          <table className="table table-striped">
-            <thead>
-              <tr>
-                <th>Username</th>
-                <th>Role</th>
-                <th>Email</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user) => (
-                <tr key={user.id}>
-                  <td>{user.username}</td>
-                  <td>{user.role}</td>
-                  <td>{user.email}</td>
-                  <td>
-                    <button className="btn btn-warning btn-sm me-2">Edit</button>
-                    <button
-                      onClick={() => handleDeleteUser(user.id)}
-                      className="btn btn-primary btn-sm"
-                    >
-                      Delete
-                    </button>
-                  </td>
+          {users.length === 0 ? (
+            <p className="text-muted">No users found.</p>
+          ) : (
+            <table className="table table-striped">
+              <thead>
+                <tr>
+                  <th>Username</th>
+                  <th>Role</th>
+                  <th>Email</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {users.map((user) => (
+                  <tr key={user.id}>
+                    <td>{user.username}</td>
+                    <td>{user.role}</td>
+                    <td>{user.email}</td>
+                    <td>
+                      <button
+                        className="btn btn-warning btn-sm me-2"
+                        disabled
+                        title="Edit functionality coming soon"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDeleteUser(user.id)}
+                        className="btn btn-danger btn-sm"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
     </div>
