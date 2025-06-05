@@ -49,7 +49,7 @@ class SchoolSettings(models.Model):
     school_name = models.CharField(max_length=200)
     motto = models.CharField(max_length=200)
     logo = models.CharField(max_length=200, blank=True)  # URL or path
-    academic_year = models.IntegerField()
+    academic_year = models.IntegerField(null=True, default=timezone.now().year)
     current_term = models.CharField(max_length=20)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'role': 'admin'}, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
