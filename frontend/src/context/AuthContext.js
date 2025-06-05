@@ -8,7 +8,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log('AuthProvider: Checking for token on mount');
+    console.log('AuthProvider: Checking for token on mount or user change');
     const token = localStorage.getItem('token');
     if (token) {
       console.log('AuthProvider: Token found, fetching user');
@@ -32,7 +32,7 @@ export const AuthProvider = ({ children }) => {
       console.log('AuthProvider: No token found');
       setLoading(false);
     }
-  }, []);
+  }, []); // Empty dependency array for initial mount only
 
   return (
     <AuthContext.Provider value={{ user, setUser, loading }}>
