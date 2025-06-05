@@ -1,227 +1,247 @@
-import logging
-from rest_framework import viewsets
+from django.contrib.auth import get_user_model
+from django.utils import timezone
+from django.conf import settings
+from rest_framework import viewsets, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from rest_framework import status
-from .models import User, Subject, Class, Student, Parent, Exam, Grade, Attendance, Fee, Announcement, Message, Timetable, Homework, LibraryItem, LibraryBorrowing, LeaveApplication, ReportCard, ParentFeedback, AuditLog, SchoolSettings
-from .serializers import UserSerializer, SubjectSerializer, ClassSerializer, StudentSerializer, ParentSerializer, ExamSerializer, GradeSerializer, AttendanceSerializer, FeeSerializer, AnnouncementSerializer, MessageSerializer, TimetableSerializer, HomeworkSerializer, LibraryItemSerializer, LibraryBorrowingSerializer, LeaveApplicationSerializer, ReportCardSerializer, ParentFeedbackSerializer, AuditLogSerializer, SchoolSettingsSerializer
-from .permissions import IsAdmin, IsTeacher, IsParent, IsStudent, IsStaff, IsAdminOrReadOnly
-from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from .serializers import (
+    UserSerializer, SubjectSerializer, ClassSerializer, StudentSerializer,
+    ParentSerializer, ExamSerializer, GradeSerializer, AttendanceSerializer,
+    FeeSerializer, AnnouncementSerializer, MessageSerializer, TimetableSerializer,
+    HomeworkSerializer, LibraryItemSerializer, LibraryBorrowingSerializer,
+    LeaveApplicationSerializer, ReportCardSerializer, ParentFeedbackSerializer,
+    AuditLogSerializer, SchoolSettingsSerializer,
+)
+from .models import (
+    Subject, Class, Student, Parent, Exam, Grade, Attendance, Fee, Announcement,
+    Message, Timetable, Homework, LibraryItem, LibraryBorrowing, LeaveApplication,
+    ReportCard, ParentFeedback, AuditLog, SchoolSettings,
+)
 
-logger = logging.getLogger(__name__)
+User = get_user_model()
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_current_user(request):
-    logger.info(f"Received GET request for /users/me/ - User: {request.user}, Authenticated: {request.user.is_authenticated}")
-    if not request.user.is_authenticated:
-        logger.error("Authentication failed for /users/me/")
-        return Response({"detail": "Authentication credentials were not provided."}, status=status.HTTP_401_UNAUTHORIZED)
-    try:
-        serializer = UserSerializer(request.user)
-        logger.info(f"Successfully serialized user data: {serializer.data}")
-        return Response(serializer.data)
-    except Exception as e:
-        logger.error(f"Error serializing user data: {str(e)}")
-        return Response({"detail": "Error retrieving user profile."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    user = request.user
+    print(f"Received GET request for /users/me/ - User: {user.username}, Authenticated: {user.is_authenticated}")
+    serializer = UserSerializer(user)
+    print(f"Successfully serialized user data: {serializer.data}")
+    return Response(serializer.data)
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [IsAdmin]
-    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def get_queryset(self):
+        print(f"UserViewSet: User authenticated - {self.request.user.username}, Is Admin: {self.request.user.role == 'admin'}, Is Superuser: {self.request.user.is_superuser}")
+        if self.request.user.is_superuser:
+            return User.objects.all()
+        elif self.request.user.role == 'admin':
+            return User.objects.exclude(is_superuser=True)
+        return User.objects.none()
 
 class SubjectViewSet(viewsets.ModelViewSet):
     queryset = Subject.objects.all()
     serializer_class = SubjectSerializer
-    permission_classes = [IsAdminOrReadOnly]
-    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
 
 class ClassViewSet(viewsets.ModelViewSet):
     queryset = Class.objects.all()
     serializer_class = ClassSerializer
-    permission_classes = [IsAdminOrReadOnly]
-    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
 
 class StudentViewSet(viewsets.ModelViewSet):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
-    permission_classes = [IsAdmin | IsStaff]
-    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_superuser or user.role == 'admin':
+            return Student.objects.all()
+        elif user.role == 'teacher':
+            return Student.objects.filter(class_id__teacher=user)
+        elif user.role == 'parent':
+            return Student.objects.filter(parent__user=user)
+        elif user.role == 'student':
+            return Student.objects.filter(user=user)
+        return Student.objects.none()
 
 class ParentViewSet(viewsets.ModelViewSet):
     queryset = Parent.objects.all()
     serializer_class = ParentSerializer
-    permission_classes = [IsAdmin]
-    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
 
 class ExamViewSet(viewsets.ModelViewSet):
     queryset = Exam.objects.all()
     serializer_class = ExamSerializer
-    permission_classes = [IsAdminOrReadOnly]
-    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
 
 class GradeViewSet(viewsets.ModelViewSet):
     queryset = Grade.objects.all()
     serializer_class = GradeSerializer
-    permission_classes = [IsAdmin | IsTeacher]
-    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
-        if user.role == 'teacher':
-            return Grade.objects.filter(created_by=user)
+        if user.is_superuser or user.role == 'admin':
+            return Grade.objects.all()
+        elif user.role == 'teacher':
+            return Grade.objects.filter(student__class_id__teacher=user)
         elif user.role == 'parent':
-            parent = Parent.objects.get(user=user)
-            return Grade.objects.filter(student__parents__user=user)
+            return Grade.objects.filter(student__parent__user=user)
         elif user.role == 'student':
-            student = Student.objects.get(user=user)
-            return Grade.objects.filter(student=student)
-        return self.queryset
+            return Grade.objects.filter(student__user=user)
+        return Grade.objects.none()
 
 class AttendanceViewSet(viewsets.ModelViewSet):
     queryset = Attendance.objects.all()
     serializer_class = AttendanceSerializer
-    permission_classes = [IsAdmin | IsTeacher]
-    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
-        if user.role == 'teacher':
-            return Attendance.objects.filter(created_by=user)
+        if user.is_superuser or user.role == 'admin':
+            return Attendance.objects.all()
+        elif user.role == 'teacher':
+            return Attendance.objects.filter(student__class_id__teacher=user)
         elif user.role == 'parent':
-            parent = Parent.objects.get(user=user)
-            return Attendance.objects.filter(student__parents__user=user)
-        return self.queryset
+            return Attendance.objects.filter(student__parent__user=user)
+        elif user.role == 'student':
+            return Attendance.objects.filter(student__user=user)
+        return Attendance.objects.none()
 
 class FeeViewSet(viewsets.ModelViewSet):
     queryset = Fee.objects.all()
     serializer_class = FeeSerializer
-    permission_classes = [IsAdmin | IsStaff]
-    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
-        if user.role == 'parent':
-            parent = Parent.objects.get(user=user)
-            return Fee.objects.filter(student__parents__user=user)
-        return self.queryset
+        if user.is_superuser or user.role == 'admin':
+            return Fee.objects.all()
+        elif user.role == 'parent':
+            return Fee.objects.filter(student__parent__user=user)
+        elif user.role == 'student':
+            return Fee.objects.filter(student__user=user)
+        return Fee.objects.none()
 
 class AnnouncementViewSet(viewsets.ModelViewSet):
     queryset = Announcement.objects.all()
     serializer_class = AnnouncementSerializer
-    permission_classes = [IsAdminOrReadOnly]
-    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
-        if user.role in ['parent', 'student']:
-            return Announcement.objects.filter(target_roles__contains=user.role)
-        return self.queryset
+        if user.is_superuser or user.role == 'admin':
+            return Announcement.objects.all()
+        return Announcement.objects.filter(target_roles__contains=user.role)
 
 class MessageViewSet(viewsets.ModelViewSet):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
     permission_classes = [IsAuthenticated]
-    authentication_classes = [JWTAuthentication]
 
     def get_queryset(self):
         user = self.request.user
-        return Message.objects.filter(sender=user) | Message.objects.filter(receiver=user)
+        if user.is_superuser or user.role == 'admin':
+            return Message.objects.all()
+        return Message.objects.filter(recipient=user)
 
 class TimetableViewSet(viewsets.ModelViewSet):
     queryset = Timetable.objects.all()
     serializer_class = TimetableSerializer
-    permission_classes = [IsAdminOrReadOnly]
-    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
-        if user.role == 'student':
-            student = Student.objects.get(user=user)
-            return Timetable.objects.filter(class_instance__students=student)
+        if user.is_superuser or user.role == 'admin':
+            return Timetable.objects.all()
         elif user.role == 'teacher':
-            return Timetable.objects.filter(class_instance__teachers=user)
-        return self.queryset
+            return Timetable.objects.filter(teacher=user)
+        elif user.role == 'student':
+            return Timetable.objects.filter(class_id__students__user=user)
+        return Timetable.objects.none()
 
 class HomeworkViewSet(viewsets.ModelViewSet):
     queryset = Homework.objects.all()
     serializer_class = HomeworkSerializer
-    permission_classes = [IsAdmin | IsTeacher]
-    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
-        if user.role == 'student':
-            student = Student.objects.get(user=user)
-            return Homework.objects.filter(class_instance__students=student)
-        elif user.role == 'parent':
-            parent = Parent.objects.get(user=user)
-            return Homework.objects.filter(class_instance__students__parents=user)
-        return self.queryset
+        if user.is_superuser or user.role == 'admin':
+            return Homework.objects.all()
+        elif user.role == 'teacher':
+            return Homework.objects.filter(teacher=user)
+        elif user.role == 'student':
+            return Homework.objects.filter(class_id__students__user=user)
+        return Homework.objects.none()
 
 class LibraryItemViewSet(viewsets.ModelViewSet):
     queryset = LibraryItem.objects.all()
     serializer_class = LibraryItemSerializer
-    permission_classes = [IsAdminOrReadOnly]
-    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
 
 class LibraryBorrowingViewSet(viewsets.ModelViewSet):
     queryset = LibraryBorrowing.objects.all()
     serializer_class = LibraryBorrowingSerializer
-    permission_classes = [IsAdmin | IsStaff]
-    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_superuser or user.role == 'admin':
+            return LibraryBorrowing.objects.all()
+        return LibraryBorrowing.objects.filter(user=user)
 
 class LeaveApplicationViewSet(viewsets.ModelViewSet):
     queryset = LeaveApplication.objects.all()
     serializer_class = LeaveApplicationSerializer
-    permission_classes = [IsAdmin | IsStudent | IsStaff]
-    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
-        if user.role in ['student', 'staff']:
-            return LeaveApplication.objects.filter(user=user)
-        return self.queryset
+        if user.is_superuser or user.role == 'admin':
+            return LeaveApplication.objects.all()
+        return LeaveApplication.objects.filter(user=user)
 
 class ReportCardViewSet(viewsets.ModelViewSet):
     queryset = ReportCard.objects.all()
     serializer_class = ReportCardSerializer
-    permission_classes = [IsAdmin]
-    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
-        if user.role == 'parent':
-            parent = Parent.objects.get(user=user)
-            return ReportCard.objects.filter(student__parents__user=user)
+        if user.is_superuser or user.role == 'admin':
+            return ReportCard.objects.all()
+        elif user.role == 'parent':
+            return ReportCard.objects.filter(student__parent__user=user)
         elif user.role == 'student':
-            student = Student.objects.get(user=user)
-            return ReportCard.objects.filter(student=student)
-        return self.queryset
+            return ReportCard.objects.filter(student__user=user)
+        return ReportCard.objects.none()
 
 class ParentFeedbackViewSet(viewsets.ModelViewSet):
     queryset = ParentFeedback.objects.all()
     serializer_class = ParentFeedbackSerializer
-    permission_classes = [IsAdmin | IsParent]
-    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
-        if user.role == 'parent':
-            parent = Parent.objects.get(user=user)
-            return ParentFeedback.objects.filter(parent=parent)
-        return self.queryset
+        if user.is_superuser or user.role == 'admin':
+            return ParentFeedback.objects.all()
+        elif user.role == 'parent':
+            return ParentFeedback.objects.filter(parent__user=user)
+        return ParentFeedback.objects.none()
 
 class AuditLogViewSet(viewsets.ModelViewSet):
     queryset = AuditLog.objects.all()
     serializer_class = AuditLogSerializer
-    permission_classes = [IsAdmin]
-    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
 
 class SchoolSettingsViewSet(viewsets.ModelViewSet):
     queryset = SchoolSettings.objects.all()
     serializer_class = SchoolSettingsSerializer
-    permission_classes = [IsAdmin]
-    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]

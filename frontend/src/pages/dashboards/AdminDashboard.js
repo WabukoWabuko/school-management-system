@@ -25,14 +25,17 @@ function AdminDashboard() {
     try {
       setError('');
       const token = localStorage.getItem('token');
+      console.log('AdminDashboard: Token for fetchUsers:', token);
       if (!token) throw new Error('No authentication token found');
       const response = await axios.get('http://localhost:8000/api/users/', {
         headers: { Authorization: `Bearer ${token}` },
       });
+      console.log('AdminDashboard: Users fetched:', response.data);
       setUsers(response.data);
     } catch (err) {
-      setError(err.response?.data?.detail || err.message || 'Failed to fetch users. Please try again.');
-      console.error('Fetch users error:', err);
+      const errorMessage = err.response?.data?.detail || err.message || 'Failed to fetch users. Please try again.';
+      setError(errorMessage);
+      console.error('Fetch users error:', err.response?.data || err.message);
     }
   };
 
@@ -45,6 +48,7 @@ function AdminDashboard() {
     try {
       setError('');
       const token = localStorage.getItem('token');
+      console.log('AdminDashboard: Token for createUser:', token);
       if (!token) throw new Error('No authentication token found');
       await axios.post('http://localhost:8000/api/users/', formData, {
         headers: { Authorization: `Bearer ${token}` },
@@ -52,8 +56,9 @@ function AdminDashboard() {
       fetchUsers();
       setFormData({ username: '', email: '', role: 'student', password: '' });
     } catch (err) {
-      setError(err.response?.data?.detail || err.message || 'Failed to create user. Please check the form data.');
-      console.error('Create user error:', err);
+      const errorMessage = err.response?.data?.detail || err.message || 'Failed to create user. Please check the form data.';
+      setError(errorMessage);
+      console.error('Create user error:', err.response?.data || err.message);
     }
   };
 
@@ -62,14 +67,16 @@ function AdminDashboard() {
       try {
         setError('');
         const token = localStorage.getItem('token');
+        console.log('AdminDashboard: Token for deleteUser:', token);
         if (!token) throw new Error('No authentication token found');
         await axios.delete(`http://localhost:8000/api/users/${id}/`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         fetchUsers();
       } catch (err) {
-        setError(err.response?.data?.detail || err.message || 'Failed to delete user. Please try again.');
-        console.error('Delete user error:', err);
+        const errorMessage = err.response?.data?.detail || err.message || 'Failed to delete user. Please try again.';
+        setError(errorMessage);
+        console.error('Delete user error:', err.response?.data || err.message);
       }
     }
   };
@@ -88,7 +95,7 @@ function AdminDashboard() {
           <p>Manage users, classes, and settings from this dashboard.</p>
         </div>
       </div>
-      {error && <div className="alert alert-danger">{error}</div>}
+      {error && <div className="alert alert-danger m-3">{error}</div>}
       <div className="card shadow mb-4">
         <div className="card-body">
           <h3 className="card-title mb-4">Create User</h3>
