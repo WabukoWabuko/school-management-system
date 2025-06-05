@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useContext } from 'react';
 import axios from 'axios';
-import { AuthContext } from '../context/AuthContext';
+import { AuthContext } from '../../context/AuthContext';
 
 function AdminDashboard() {
   const { user } = useContext(AuthContext);
   console.log('AdminDashboard: Rendered, user:', user); // Log on every render
+
   const [users, setUsers] = useState([]);
   const [error, setError] = useState('');
 
@@ -24,12 +25,13 @@ function AdminDashboard() {
     try {
       setError('');
       const token = localStorage.getItem('token');
+      if (!token) throw new Error('No authentication token found');
       const response = await axios.get('http://localhost:8000/api/users/', {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUsers(response.data);
     } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to fetch users. Please try again.');
+      setError(err.response?.data?.detail || err.message || 'Failed to fetch users. Please try again.');
       console.error('Fetch users error:', err);
     }
   };
@@ -43,13 +45,14 @@ function AdminDashboard() {
     try {
       setError('');
       const token = localStorage.getItem('token');
+      if (!token) throw new Error('No authentication token found');
       await axios.post('http://localhost:8000/api/users/', formData, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchUsers();
       setFormData({ username: '', email: '', role: 'student', password: '' });
     } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to create user. Please check the form data.');
+      setError(err.response?.data?.detail || err.message || 'Failed to create user. Please check the form data.');
       console.error('Create user error:', err);
     }
   };
@@ -59,16 +62,22 @@ function AdminDashboard() {
       try {
         setError('');
         const token = localStorage.getItem('token');
+        if (!token) throw new Error('No authentication token found');
         await axios.delete(`http://localhost:8000/api/users/${id}/`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         fetchUsers();
       } catch (err) {
-        setError(err.response?.data?.detail || 'Failed to delete user. Please try again.');
+        setError(err.response?.data?.detail || err.message || 'Failed to delete user. Please try again.');
         console.error('Delete user error:', err);
       }
     }
   };
+
+  if (!user) {
+    console.error('AdminDashboard: No user object from AuthContext');
+    return <div>Error: User not authenticated</div>; // Fallback UI
+  }
 
   return (
     <div className="container py-5">
