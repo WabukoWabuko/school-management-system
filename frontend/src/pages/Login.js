@@ -36,6 +36,7 @@ function Login() {
         },
       });
       const user = userResponse.data;
+      console.log('Login: Setting user in AuthContext:', user);
       setUser(user);
 
       // Treat superusers as admins for redirection
@@ -43,21 +44,27 @@ function Login() {
 
       switch (effectiveRole) {
         case 'admin':
+          console.log('Login: Redirecting to /dashboard/admin');
           navigate('/dashboard/admin');
           break;
         case 'teacher':
+          console.log('Login: Redirecting to /dashboard/teacher');
           navigate('/dashboard/teacher');
           break;
         case 'parent':
+          console.log('Login: Redirecting to /dashboard/parent');
           navigate('/dashboard/parent');
           break;
         case 'student':
+          console.log('Login: Redirecting to /dashboard/student');
           navigate('/dashboard/student');
           break;
         case 'staff':
+          console.log('Login: Redirecting to /dashboard/staff');
           navigate('/dashboard/staff');
           break;
         default:
+          console.log('Login: Redirecting to /');
           navigate('/');
       }
     } catch (err) {

@@ -4,7 +4,7 @@ import { AuthContext } from '../../context/AuthContext';
 
 function AdminDashboard() {
   const { user } = useContext(AuthContext);
-  console.log('AdminDashboard: Rendered, user:', user); // Log on every render
+  console.log('AdminDashboard: Rendered, user:', user);
 
   const [users, setUsers] = useState([]);
   const [error, setError] = useState('');
@@ -76,7 +76,7 @@ function AdminDashboard() {
 
   if (!user) {
     console.error('AdminDashboard: No user object from AuthContext');
-    return <div>Error: User not authenticated</div>; // Fallback UI
+    return <div className="alert alert-danger m-3">Error: User not authenticated</div>;
   }
 
   return (
