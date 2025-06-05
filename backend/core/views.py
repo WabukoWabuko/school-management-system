@@ -242,6 +242,42 @@ class AuditLogViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, IsAdminUser]
 
 class SchoolSettingsViewSet(viewsets.ModelViewSet):
-    queryset = SchoolSettings.objects.all()
+    queryset = SchoolSettings.objects.all().first() or SchoolSettings.objects.create(schoolName='Elite Academy', academicYear=str(timezone.now().year))
     serializer_class = SchoolSettingsSerializer
     permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def list(self, request, *args, **kwargs):
+        try:
+            settings = SchoolSettings.objects.first()
+            if not settings:
+                settings = SchoolSettings.objects.create(schoolName='Elite Academy', academicYear=str(timezone.now().year))
+                print("SchoolSettings: Created default settings due to absence")
+            serializer = self.get_serializer(settings)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"message": "O wise one, an unforeseen error has clouded the retrieval of settings. Seek guidance from the logs."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def retrieve(self, request, *args, **kwargs):
+        try:
+            settings = SchoolSettings.objects.first()
+            if not settings:
+                settings = SchoolSettings.objects.create(schoolName='Elite Academy', academicYear=str(timezone.now().year))
+                print("SchoolSettings: Created default settings due to absence")
+            serializer = self.get_serializer(settings)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"message": "O seeker of knowledge, the settings you seek are lost in the ether. Consult the logs for enlightenment."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def update(self, request, *args, **kwargs):
+        try:
+            settings = SchoolSettings.objects.first()
+            if not settings:
+                settings = SchoolSettings.objects.create(schoolName='Elite Academy', academicYear=str(timezone.now().year))
+                print("SchoolSettings: Created default settings due to absence")
+            serializer = self.get_serializer(settings, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({"message": "The settings have been updated with the wisdom of the ages. May your institution thrive."}, status=status.HTTP_200_OK)
+            return Response({"message": "O guardian of the realm, the data you provided lacks the harmony of truth. Verify and try again."}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"message": "A shadow has fallen upon the update process. Seek the logs for the path to resolution."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

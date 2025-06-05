@@ -4,78 +4,72 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
 function Login() {
-  const [formData, setFormData] = useState({
-    username: '',
-    password: '',
-  });
+  const [formData, setFormData] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const { setUser } = useContext(AuthContext);
 
   const handleInputChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormData(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setIsSubmitting(true);
+
     try {
-      const response = await axios.post('http://localhost:8000/api/token/', formData, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      // Step 1: Authenticate
+      const { data } = await axios.post('http://localhost:8000/api/token/', formData, {
+        headers: { 'Content-Type': 'application/json' },
       });
-      const { access, refresh } = response.data;
+
+      const { access, refresh } = data;
       localStorage.setItem('token', access);
       localStorage.setItem('refresh', refresh);
 
-      const userResponse = await axios.get('http://localhost:8000/api/users/me/', {
+      // Step 2: Fetch user info
+      const userRes = await axios.get('http://localhost:8000/api/users/me/', {
         headers: {
           Authorization: `Bearer ${access}`,
           'Content-Type': 'application/json',
         },
       });
-      const user = userResponse.data;
-      console.log('Login: Setting user in AuthContext:', user);
-      setUser(user);
 
-      // Treat superusers as admins for redirection
+      const user = userRes.data;
+      setUser(user);
+      console.log('Login successful:', user);
+
+      // Step 3: Role-based redirect
       const effectiveRole = user.is_superuser ? 'admin' : user.role;
 
-      switch (effectiveRole) {
-        case 'admin':
-          console.log('Login: Redirecting to /dashboard/admin');
-          navigate('/dashboard/admin');
-          break;
-        case 'teacher':
-          console.log('Login: Redirecting to /dashboard/teacher');
-          navigate('/dashboard/teacher');
-          break;
-        case 'parent':
-          console.log('Login: Redirecting to /dashboard/parent');
-          navigate('/dashboard/parent');
-          break;
-        case 'student':
-          console.log('Login: Redirecting to /dashboard/student');
-          navigate('/dashboard/student');
-          break;
-        case 'staff':
-          console.log('Login: Redirecting to /dashboard/staff');
-          navigate('/dashboard/staff');
-          break;
-        default:
-          console.log('Login: Redirecting to /');
-          navigate('/');
-      }
+      const routeMap = {
+        admin: '/dashboard/admin',
+        teacher: '/dashboard/teacher',
+        parent: '/dashboard/parent',
+        student: '/dashboard/student',
+        staff: '/dashboard/staff',
+      };
+
+      const redirectPath = routeMap[effectiveRole] || '/';
+      console.log(`Redirecting to ${redirectPath}`);
+      navigate(redirectPath);
+
     } catch (err) {
-      console.error('Login error details:', err.response ? err.response : err.message);
-      if (err.response && err.response.status === 401) {
-        setError('Invalid username or password. Please try again.');
-      } else if (err.response && err.response.status === 404) {
-        setError('User profile endpoint (/api/users/me/) not found. Please ensure the backend is running and configured correctly.');
+      console.error('Login error:', err.response || err.message);
+      if (err.response?.status === 401) {
+        setError('Invalid username or password.');
+      } else if (err.response?.status === 404) {
+        setError('User profile not found. Is your backend running?');
       } else {
-        setError('An error occurred during login. Check the console for details.');
+        setError('Unexpected error. Check console for details.');
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -112,7 +106,13 @@ function Login() {
                     required
                   />
                 </div>
-                <button type="submit" className="btn btn-primary w-100">Login</button>
+                <button
+                  type="submit"
+                  className="btn btn-primary w-100"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Logging in...' : 'Login'}
+                </button>
               </form>
             </div>
           </div>
@@ -123,3 +123,4 @@ function Login() {
 }
 
 export default Login;
+
