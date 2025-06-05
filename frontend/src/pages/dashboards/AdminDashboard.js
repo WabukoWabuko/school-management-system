@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useContext, useCallback, useRef, useMemo } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../../context/AuthContext';
 import { ToastContainer, toast } from 'react-toastify';
@@ -40,8 +40,8 @@ function AdminDashboard() {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
 
-  // Mapping of activeTab to state and setters
-  const tabDataMap = {
+  // Memoize tabDataMap to stabilize its reference
+  const tabDataMap = useMemo(() => ({
     users: { data: users, setter: setUsers },
     classes: { data: classes, setter: setClasses },
     subjects: { data: subjects, setter: setSubjects },
@@ -60,7 +60,7 @@ function AdminDashboard() {
     parentFeedback: { data: parentFeedback, setter: setParentFeedback },
     auditLogs: { data: auditLogs, setter: setAuditLogs },
     settings: { data: settings, setter: setSettings },
-  };
+  }), [users, classes, subjects, exams, grades, attendance, fees, announcements, messages, timetables, homework, libraryItems, borrowings, leaveApps, reportCards, parentFeedback, auditLogs, settings]);
 
   const showToast = (message, type = 'error') => {
     toast[type](message, {
@@ -131,7 +131,7 @@ function AdminDashboard() {
       const { setter } = tabDataMap[activeTab];
       fetchData(`${activeTab}?search=${debouncedSearch}`, setter, `Failed to search ${activeTab}.`);
     }
-  }, [debouncedSearch, activeTab, fetchData]);
+  }, [debouncedSearch, activeTab, fetchData, tabDataMap]);
 
   useEffect(() => {
     if (chartInstance.current) {
