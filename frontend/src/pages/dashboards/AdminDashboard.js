@@ -1,12 +1,13 @@
 import React, { useEffect, useState, useContext } from 'react';
 import axios from 'axios';
-import { AuthContext } from '../../context/AuthContext';
+import { AuthContext } from '../context/AuthContext';
 
 function AdminDashboard() {
   const { user } = useContext(AuthContext);
-  console.log('AdminDashboard: Component mounted, user:', user); // Moved outside useEffect
+  console.log('AdminDashboard: Rendered, user:', user); // Log on every render
   const [users, setUsers] = useState([]);
   const [error, setError] = useState('');
+
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -15,8 +16,9 @@ function AdminDashboard() {
   });
 
   useEffect(() => {
+    console.log('AdminDashboard: useEffect triggered');
     fetchUsers();
-  }, []); // No dependency on 'user' needed here
+  }, []);
 
   const fetchUsers = async () => {
     try {
@@ -28,6 +30,7 @@ function AdminDashboard() {
       setUsers(response.data);
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to fetch users. Please try again.');
+      console.error('Fetch users error:', err);
     }
   };
 
@@ -47,6 +50,7 @@ function AdminDashboard() {
       setFormData({ username: '', email: '', role: 'student', password: '' });
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to create user. Please check the form data.');
+      console.error('Create user error:', err);
     }
   };
 
@@ -61,6 +65,7 @@ function AdminDashboard() {
         fetchUsers();
       } catch (err) {
         setError(err.response?.data?.detail || 'Failed to delete user. Please try again.');
+        console.error('Delete user error:', err);
       }
     }
   };
