@@ -233,7 +233,17 @@ function AdminDashboard() {
   };
 
   const renderTabContent = () => {
-    const { data } = tabDataMap[activeTab]; // Removed unused 'setter'
+    // Handle analytics tab first to avoid accessing tabDataMap['analytics']
+    if (activeTab === 'analytics') {
+      return (
+        <div className="p-3">
+          <h3>School Analytics</h3>
+          <canvas ref={chartRef} style={{ maxHeight: '300px' }} />
+        </div>
+      );
+    }
+
+    const { data } = tabDataMap[activeTab];
     const formData = {
       users: { username: '', email: '', role: 'student', password: '' },
       classes: { name: '', teacher: '' },
@@ -254,15 +264,6 @@ function AdminDashboard() {
       auditLogs: { user: '', action: '', modelName: '', objectId: '', details: '' },
       settings: { schoolName: '', academicYear: '', motto: '', currentTerm: '', logo: '' },
     }[activeTab];
-
-    if (activeTab === 'analytics') {
-      return (
-        <div className="p-3">
-          <h3>School Analytics</h3>
-          <canvas ref={chartRef} style={{ maxHeight: '300px' }} />
-        </div>
-      );
-    }
 
     if (activeTab === 'settings' && !data) {
       return <p>No settings available.</p>;
