@@ -5,7 +5,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from .permissions import IsAdmin, IsAdminOrTeacher, IsAdminOrStaff, IsParent, IsStudent
+from .permissions import IsAdmin, IsAdminOrTeacher, IsAdminOrStaff, IsParent, IsStudent, IsAdminOrStaffOrParent, IsAdminOrTeacherOrParent
 from .serializers import (
     UserSerializer, SubjectSerializer, ClassInstanceSerializer, StudentSerializer,
     ParentSerializer, ExamSerializer, GradeSerializer, AttendanceSerializer,
@@ -85,7 +85,7 @@ class ExamViewSet(viewsets.ModelViewSet):
 class GradeViewSet(viewsets.ModelViewSet):
     queryset = Grade.objects.all()
     serializer_class = GradeSerializer
-    permission_classes = [IsAdminOrTeacher, IsParent]  # Allow parents to access
+    permission_classes = [IsAdminOrTeacherOrParent]  # Use custom permission
 
     def get_queryset(self):
         user = self.request.user
@@ -122,7 +122,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
 class FeeViewSet(viewsets.ModelViewSet):
     queryset = Fee.objects.all()
     serializer_class = FeeSerializer
-    permission_classes = [IsAdminOrStaff, IsParent]  # Allow parents to access
+    permission_classes = [IsAdminOrStaffOrParent]  # Use custom permission
 
     def get_queryset(self):
         user = self.request.user
