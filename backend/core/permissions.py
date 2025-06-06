@@ -64,3 +64,17 @@ class IsAdminOrStudent(permissions.BasePermission):
     """
     def has_permission(self, request, view):
         return request.user.is_authenticated and request.user.role in ['admin', 'student']
+
+class IsAdminOrStaffOrParent(permissions.BasePermission):
+    """
+    Allows access to admin, staff, or parent users.
+    """
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and request.user.role in ['admin', 'staff', 'parent']
+
+class IsAdminOrTeacherOrParent(permissions.BasePermission):
+    """
+    Allows access to admin, teacher, or parent users.
+    """
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and request.user.role in ['admin', 'teacher', 'parent']
