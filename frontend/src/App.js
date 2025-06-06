@@ -21,9 +21,9 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <div className="d-flex flex-column min-vh-100">
+        <div className="d-flex flex-column min-vh-100" style={{ backgroundColor: '#f8f9fa' }}>
           <Navbar />
-          <main className="flex-grow-1" style={{ backgroundColor: '#f8f9fa' }}>
+          <main className="flex-grow-1">
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/about" element={<About />} />
@@ -82,4 +82,3 @@ function App() {
 }
 
 export default App;
-
