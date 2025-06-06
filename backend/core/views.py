@@ -182,7 +182,7 @@ class MessageViewSet(viewsets.ModelViewSet):
 class TimetableViewSet(viewsets.ModelViewSet):
     queryset = Timetable.objects.all()
     serializer_class = TimetableSerializer
-    permission_classes = [IsAdminOrStudentForTimetable]  # Updated permission
+    permission_classes = [IsAdminOrStudentForTimetable]
 
     def get_queryset(self):
         user = self.request.user
@@ -198,7 +198,7 @@ class TimetableViewSet(viewsets.ModelViewSet):
 class HomeworkViewSet(viewsets.ModelViewSet):
     queryset = Homework.objects.all()
     serializer_class = HomeworkSerializer
-    permission_classes = [IsAdminOrTeacherOrStudentForHomework]  # Updated permission
+    permission_classes = [IsAdminOrTeacherOrStudentForHomework]
 
     def get_queryset(self):
         user = self.request.user
@@ -223,7 +223,7 @@ class LibraryBorrowingViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdminOrStaff]
 
     def get_queryset(self):
-        user = the.request.user
+        user = self.request.user  # Fixed typo from 'the.request.user' to 'self.request.user'
         if user.is_superuser or user.role == 'admin':
             return LibraryBorrowing.objects.all()
         elif user.role == 'student':
