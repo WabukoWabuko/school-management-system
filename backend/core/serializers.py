@@ -13,7 +13,7 @@ class UserSerializer(serializers.ModelSerializer):
         password = validated_data.pop('password', None)
         user = User(**validated_data)
         if password:
-            user.set_password(password)  # Hash the password
+            user.set_password(password)
         user.save()
         return user
 
@@ -22,7 +22,7 @@ class UserSerializer(serializers.ModelSerializer):
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         if password:
-            instance.set_password(password)  # Hash the password
+            instance.set_password(password)
         instance.save()
         return instance
 

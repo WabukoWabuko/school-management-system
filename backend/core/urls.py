@@ -49,9 +49,9 @@ router.register(r'school-settings', SchoolSettingsViewSet, basename='school-sett
 
 # Define specific paths first, then include router URLs
 urlpatterns = [
-    path('users/me/', get_current_user, name='current_user'),  # Specific path first
+    path('users/me/', get_current_user, name='current_user'),
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/', include('rest_framework.urls')),
-    path('', include(router.urls)),  # Router URLs last to avoid overriding
+    path('', include(router.urls)),
 ]

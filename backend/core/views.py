@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.conf import settings
 from rest_framework import viewsets, status
-from rest_framework.decorators import api_view, permission_classes, action  # Added 'action' here
+from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .permissions import IsAdmin, IsAdminOrTeacher, IsAdminOrStaff, IsParent, IsStudent
@@ -23,14 +23,14 @@ from .models import (
 User = get_user_model()
 
 @api_view(['GET'])
-  @permission_classes([IsAuthenticated])
-  def get_current_user(request):
-      print(f"Request headers for /api/users/me/: {request.headers}")  # Add this line
-      user = request.user
-      print(f"Received GET request for /users/me/ - User: {user.username}, Authenticated: {user.is_authenticated}")
-      serializer = UserSerializer(user)
-      print(f"Successfully serialized user data: {serializer.data}")
-      return Response(serializer.data)
+@permission_classes([IsAuthenticated])
+def get_current_user(request):
+    print(f"Request headers for /api/users/me/: {request.headers}")
+    user = request.user
+    print(f"Received GET request for /users/me/ - User: {user.username}, Authenticated: {user.is_authenticated}")
+    serializer = UserSerializer(user)
+    print(f"Successfully serialized user data: {serializer.data}")
+    return Response(serializer.data)
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
