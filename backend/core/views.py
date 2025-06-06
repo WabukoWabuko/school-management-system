@@ -25,7 +25,7 @@ User = get_user_model()
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_current_user(request):
-    print(f"Request headers for /api/users/me/: {request.headers}")  # Debug header
+    print(f"Request headers for /api/users/me/: {request.headers}")
     user = request.user
     print(f"Received GET request for /users/me/ - User: {user.username}, Authenticated: {user.is_authenticated}")
     serializer = UserSerializer(user)
@@ -96,7 +96,7 @@ class GradeViewSet(viewsets.ModelViewSet):
         elif user.role == 'teacher' and teacher_id:
             return Grade.objects.filter(created_by_id=teacher_id)
         elif user.role == 'parent' and parent_id:
-            return Grade.objects.filter(student__parents__id=parent_id)
+            return Grade.objects.filter(student__parents__id=parent_id).distinct()
         elif user.role == 'student':
             return Grade.objects.filter(student__user=user)
         return Grade.objects.none()
@@ -130,7 +130,7 @@ class FeeViewSet(viewsets.ModelViewSet):
         if user.is_superuser or user.role == 'admin':
             return Fee.objects.all()
         elif user.role == 'parent' and parent_id:
-            return Fee.objects.filter(student__parents__id=parent_id)
+            return Fee.objects.filter(student__parents__id=parent_id).distinct()
         elif user.role == 'student':
             return Fee.objects.filter(student__user=user)
         return Fee.objects.none()
@@ -192,7 +192,7 @@ class TimetableViewSet(viewsets.ModelViewSet):
         elif user.role == 'teacher':
             return Timetable.objects.filter(class_instance__teachers=user)
         elif user.role == 'student' and student_id:
-            return Timetable.objects.filter(class_instance__students__user_id=student_id)
+            return Timetable.objects.filter(class_instance__students__user_id=student_id).distinct()
         return Timetable.objects.none()
 
 class HomeworkViewSet(viewsets.ModelViewSet):
@@ -209,7 +209,7 @@ class HomeworkViewSet(viewsets.ModelViewSet):
         elif user.role == 'teacher' and teacher_id:
             return Homework.objects.filter(created_by_id=teacher_id)
         elif user.role == 'student' and student_id:
-            return Homework.objects.filter(class_instance__students__user_id=student_id)
+            return Homework.objects.filter(class_instance__students__user_id=student_id).distinct()
         return Homework.objects.none()
 
 class LibraryItemViewSet(viewsets.ModelViewSet):
