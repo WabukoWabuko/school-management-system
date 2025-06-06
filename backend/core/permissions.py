@@ -92,3 +92,10 @@ class IsAdminOrTeacherOrStudentForHomework(permissions.BasePermission):
     """
     def has_permission(self, request, view):
         return request.user.is_authenticated and request.user.role in ['admin', 'teacher', 'student']
+
+class IsAdminOrParent(permissions.BasePermission):
+    """
+    Allows access to admin or parent users for parent feedback.
+    """
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and request.user.role in ['admin', 'parent']

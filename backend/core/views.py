@@ -5,7 +5,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from .permissions import IsAdmin, IsAdminOrTeacher, IsAdminOrStaff, IsParent, IsStudent, IsAdminOrStaffOrParent, IsAdminOrTeacherOrParent, IsAdminOrStudentForTimetable, IsAdminOrTeacherOrStudentForHomework
+from .permissions import IsAdmin, IsAdminOrTeacher, IsAdminOrStaff, IsParent, IsStudent, IsAdminOrStaffOrParent, IsAdminOrTeacherOrParent, IsAdminOrStudentForTimetable, IsAdminOrTeacherOrStudentForHomework, IsAdminOrParent
 from .serializers import (
     UserSerializer, SubjectSerializer, ClassInstanceSerializer, StudentSerializer,
     ParentSerializer, ExamSerializer, GradeSerializer, AttendanceSerializer,
@@ -223,7 +223,7 @@ class LibraryBorrowingViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdminOrStaff]
 
     def get_queryset(self):
-        user = self.request.user  # Fixed typo from 'the.request.user' to 'self.request.user'
+        user = self.request.user
         if user.is_superuser or user.role == 'admin':
             return LibraryBorrowing.objects.all()
         elif user.role == 'student':
@@ -265,7 +265,7 @@ class ReportCardViewSet(viewsets.ModelViewSet):
 class ParentFeedbackViewSet(viewsets.ModelViewSet):
     queryset = ParentFeedback.objects.all()
     serializer_class = ParentFeedbackSerializer
-    permission_classes = [IsParent]
+    permission_classes = [IsAdminOrParent]  # Updated permission
 
     def get_queryset(self):
         user = self.request.user
