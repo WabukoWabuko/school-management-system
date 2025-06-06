@@ -23,7 +23,6 @@ function Login() {
     setIsSubmitting(true);
 
     try {
-      // Step 1: Authenticate
       const { data } = await axios.post('http://localhost:8000/api/token/', formData, {
         headers: { 'Content-Type': 'application/json' },
       });
@@ -32,7 +31,6 @@ function Login() {
       localStorage.setItem('token', access);
       localStorage.setItem('refresh', refresh);
 
-      // Step 2: Fetch user info
       const userRes = await axios.get('http://localhost:8000/api/users/me/', {
         headers: {
           Authorization: `Bearer ${access}`,
@@ -44,7 +42,6 @@ function Login() {
       setUser(user);
       console.log('Login successful:', user);
 
-      // Step 3: Role-based redirect
       const effectiveRole = user.is_superuser ? 'admin' : user.role;
 
       const routeMap = {
@@ -123,4 +120,3 @@ function Login() {
 }
 
 export default Login;
-
