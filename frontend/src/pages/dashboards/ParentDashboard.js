@@ -3,7 +3,7 @@ import axios from 'axios';
 import { AuthContext } from '../../context/AuthContext';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { Spinner } from 'react-bootstrap'; // Added import for Spinner
+import { Spinner } from 'react-bootstrap';
 
 function ParentDashboard() {
   const { user } = useContext(AuthContext);
@@ -56,70 +56,77 @@ function ParentDashboard() {
   if (!user) return <div className="alert alert-danger m-3">Please log in to access the dashboard.</div>;
 
   return (
-    <div className="min-h-screen bg-gray-100 py-6 flex flex-col justify-center sm:py-12">
+    <div className="container py-5">
       <ToastContainer />
-      <div className="relative py-3 sm:max-w-4xl sm:mx-auto">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-cyan-500 shadow-lg transform -skew-y-6 sm:skew-y-0 sm:-rotate-6 sm:rounded-3xl"></div>
-        <div className="relative px-4 py-10 bg-white shadow-lg sm:rounded-3xl sm:p-20">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-6">Parent Dashboard - Welcome, {user.username || 'Parent'}!</h2>
-          {error && <div className="text-red-500 text-center mb-4">{error}</div>}
+      <div className="card shadow mb-4">
+        <div className="card-body">
+          <h2 className="text-center mb-4">Parent Dashboard - Welcome, {user.username || 'Parent'}!</h2>
+          {error && <div className="alert alert-danger text-center mb-4">{error}</div>}
           {loading && <div className="text-center"><Spinner animation="border" /></div>}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-gray-50 p-6 rounded-lg shadow">
-              <h3 className="text-xl font-semibold text-gray-700 mb-4">Fee Status</h3>
-              {fees.length === 0 && !loading && <p className="text-gray-600">No fees to display.</p>}
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="bg-gray-200">
-                    <th className="p-2">Student</th>
-                    <th className="p-2">Amount</th>
-                    <th className="p-2">Balance</th>
-                    <th className="p-2">Due Date</th>
-                    <th className="p-2">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {fees.map((fee) => (
-                    <tr key={fee.id} className="border-b">
-                      <td className="p-2">{fee.student}</td>
-                      <td className="p-2">{fee.amount}</td>
-                      <td className="p-2">{fee.balance}</td>
-                      <td className="p-2">{fee.due_date}</td>
-                      <td className="p-2">
-                        <button
-                          onClick={() => handlePayFee(fee.id)}
-                          disabled={loading || fee.balance === 0}
-                          className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 disabled:bg-gray-400"
-                        >
-                          Pay
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          <div className="row">
+            <div className="col-md-6 mb-4">
+              <div className="card h-100">
+                <div className="card-body">
+                  <h3 className="card-title mb-4">Fee Status</h3>
+                  {fees.length === 0 && !loading && <p>No fees to display.</p>}
+                  <table className="table table-striped">
+                    <thead>
+                      <tr>
+                        <th>Student</th>
+                        <th>Amount</th>
+                        <th>Balance</th>
+                        <th>Due Date</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {fees.map((fee) => (
+                        <tr key={fee.id}>
+                          <td>{fee.student}</td>
+                          <td>{fee.amount}</td>
+                          <td>{fee.balance}</td>
+                          <td>{fee.due_date}</td>
+                          <td>
+                            <button
+                              onClick={() => handlePayFee(fee.id)}
+                              disabled={loading || fee.balance === 0}
+                              className="btn btn-success btn-sm"
+                            >
+                              Pay
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
-            <div className="bg-gray-50 p-6 rounded-lg shadow">
-              <h3 className="text-xl font-semibold text-gray-700 mb-4">Child's Grades</h3>
-              {grades.length === 0 && !loading && <p className="text-gray-600">No grades to display.</p>}
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="bg-gray-200">
-                    <th className="p-2">Subject</th>
-                    <th className="p-2">Marks</th>
-                    <th className="p-2">Remarks</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {grades.map((grade) => (
-                    <tr key={grade.id} className="border-b">
-                      <td className="p-2">{grade.subject}</td>
-                      <td className="p-2">{grade.marks}</td>
-                      <td className="p-2">{grade.remarks || 'N/A'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="col-md-6">
+              <div className="card h-100">
+                <div className="card-body">
+                  <h3 className="card-title mb-4">Child's Grades</h3>
+                  {grades.length === 0 && !loading && <p>No grades to display.</p>}
+                  <table className="table table-striped">
+                    <thead>
+                      <tr>
+                        <th>Subject</th>
+                        <th>Marks</th>
+                        <th>Remarks</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {grades.map((grade) => (
+                        <tr key={grade.id}>
+                          <td>{grade.subject}</td>
+                          <td>{grade.marks}</td>
+                          <td>{grade.remarks || 'N/A'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           </div>
         </div>

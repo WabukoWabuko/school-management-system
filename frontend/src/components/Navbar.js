@@ -12,79 +12,88 @@ function Navbar() {
   };
 
   return (
-    <nav className="bg-gradient-to-r from-blue-600 to-cyan-500 shadow-lg sticky top-0 z-50">
-      <div className="container mx-auto px-4 py-3">
-        <div className="flex justify-between items-center">
-          <NavLink to="/" className="text-2xl font-bold text-white">
-            Elite Academy
-          </NavLink>
-          <button
-            className="md:hidden text-white focus:outline-none"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#navbarNav"
-            aria-controls="navbarNav"
-            aria-expanded="false"
-            aria-label="Toggle navigation menu"
-          >
-            <span className="text-2xl">☰</span>
-          </button>
-          <div className="hidden md:flex space-x-6 items-center" id="navbarNav">
-            <NavLink
-              to="/"
-              end
-              className={({ isActive }) => `text-white hover:text-gray-200 transition ${isActive ? 'font-bold border-b-2 border-white' : ''}`}
-            >
-              Home
-            </NavLink>
-            <NavLink
-              to="/about"
-              className={({ isActive }) => `text-white hover:text-gray-200 transition ${isActive ? 'font-bold border-b-2 border-white' : ''}`}
-            >
-              About
-            </NavLink>
-            <NavLink
-              to="/co-curricular"
-              className={({ isActive }) => `text-white hover:text-gray-200 transition ${isActive ? 'font-bold border-b-2 border-white' : ''}`}
-            >
-              Co-Curricular
-            </NavLink>
-            <NavLink
-              to="/gallery"
-              className={({ isActive }) => `text-white hover:text-gray-200 transition ${isActive ? 'font-bold border-b-2 border-white' : ''}`}
-            >
-              Gallery
-            </NavLink>
-            <NavLink
-              to="/contact"
-              className={({ isActive }) => `text-white hover:text-gray-200 transition ${isActive ? 'font-bold border-b-2 border-white' : ''}`}
-            >
-              Contact
-            </NavLink>
+    <nav className="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm sticky-top">
+      <div className="container">
+        <NavLink className="navbar-brand" to="/">Elite Academy</NavLink>
+        <button
+          className="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation menu"
+        >
+          <span className="navbar-toggler-icon"></span>
+        </button>
+        <div className="collapse navbar-collapse" id="navbarNav">
+          <ul className="navbar-nav ms-auto">
+            <li className="nav-item">
+              <NavLink
+                className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                to="/"
+                end
+              >
+                Home
+              </NavLink>
+            </li>
+            <li className="nav-item">
+              <NavLink
+                className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                to="/about"
+              >
+                About
+              </NavLink>
+            </li>
+            <li className="nav-item">
+              <NavLink
+                className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                to="/co-curricular"
+              >
+                Co-Curricular
+              </NavLink>
+            </li>
+            <li className="nav-item">
+              <NavLink
+                className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                to="/gallery"
+              >
+                Gallery
+              </NavLink>
+            </li>
+            <li className="nav-item">
+              <NavLink
+                className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                to="/contact"
+              >
+                Contact
+              </NavLink>
+            </li>
             {user && (
-              <NavLink
-                to={`/${user.role.toLowerCase()}-dashboard`}
-                className={({ isActive }) => `text-white hover:text-gray-200 transition ${isActive ? 'font-bold border-b-2 border-white' : ''}`}
-              >
-                Dashboard
-              </NavLink>
+              <li className="nav-item">
+                <NavLink
+                  className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                  to={`/${user.role.toLowerCase()}-dashboard`}
+                >
+                  Dashboard
+                </NavLink>
+              </li>
             )}
-            {user ? (
-              <button
-                onClick={handleLogout}
-                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
-              >
-                Logout
-              </button>
-            ) : (
-              <NavLink
-                to="/login"
-                className={({ isActive }) => `bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition ${isActive ? 'font-bold' : ''}`}
-              >
-                Login
-              </NavLink>
-            )}
-          </div>
+            <li className="nav-item">
+              {user ? (
+                <button className="nav-link btn btn-outline-light ms-2" onClick={handleLogout}>
+                  Logout
+                </button>
+              ) : (
+                <NavLink
+                  className={({ isActive }) => `nav-link btn btn-outline-light ms-2 ${isActive ? 'active' : ''}`}
+                  to="/login"
+                >
+                  Login
+                </NavLink>
+              )}
+            </li>
+          </ul>
         </div>
       </div>
     </nav>

@@ -86,66 +86,73 @@ function TeacherDashboard() {
   if (!user) return <div className="alert alert-danger m-3">Please log in to access the dashboard.</div>;
 
   return (
-    <div className="min-h-screen bg-gray-100 py-6 flex flex-col justify-center sm:h-50">
+    <div className="container py-5">
       <ToastContainer />
-      <div className="relative py-3 sm:max-w-3xl sm:mx-auto">
-        <div className="absolute inset-0 bg-gradient-to-r from-red-400 to-orange-500 shadow-lg transform -skew-y-6 sm:skew-y-0 sm:-rotate-6 sm:rounded-3xl"></div>
-        <div className="relative px-4 py-10 bg-white shadow-lg sm:rounded-3xl sm:p-20">
-          <h2 className="text-3xl font-medium text-center text-gray-900 mb-6">Teacher Dashboard - Welcome, {user?.username || 'Teacher'}!</h2>
-          {error && <div className="text-red-500 text-center mb-4">{error}</div>}
+      <div className="card shadow mb-4">
+        <div className="card-body">
+          <h2 className="text-center mb-4">Teacher Dashboard - Welcome, {user?.username || 'Teacher'}!</h2>
+          {error && <div className="alert alert-danger text-center mb-4">{error}</div>}
           {loading && <div className="text-center"><Spinner animation="border" /></div>}
-          <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
-            <div className="bg-gray-50 p-6 rounded-lg shadow">
-              <h3 className="text-xl font-semibold text-gray-700 mb-4">Enter Grade</h3>
-              <button
-                onClick={() => {
-                  setModalData({ type: 'create', data: { student: '', subject: '', marks: '' } });
-                  setShowModal(true);
-                }}
-                className="mb-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-              >
-                Add Grade
-              </button>
+          <div className="row">
+            <div className="col-md-12 mb-4">
+              <div className="card">
+                <div className="card-body">
+                  <h3 className="card-title mb-4">Enter Grade</h3>
+                  <button
+                    onClick={() => {
+                      setModalData({ type: 'create', data: { student: '', subject: '', marks: '' } });
+                      setShowModal(true);
+                    }}
+                    className="btn btn-primary mb-4"
+                  >
+                    Add Grade
+                  </button>
+                </div>
+              </div>
             </div>
-            <div className="bg-gray-50 p-6 rounded-lg shadow">
-              <h3 className="text-xl font-semibold text-gray-700 mb-4">Manage Grades</h3>
-              {grades.length === 0 && !loading && <p className="text-gray-600">No grades to display.</p>}
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="bg-gray-200">
-                    <th className="p-2">Student</th>
-                    <th className="p-2">Subject</th>
-                    <th className="p-2">Marks</th>
-                    <th className="p-2">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {grades.map((grade) => (
-                    <tr key={grade.id} className="border-b">
-                      <td className="p-2">{grade.student}</td>
-                      <td className="p-2">{grade.subject}</td>
-                      <td className="p-2">{grade.marks}</td>
-                      <td className="p-2">
-                        <button
-                          onClick={() => {
-                            setModalData({ type: 'edit', data: grade });
-                            setShowModal(true);
-                          }}
-                          className="bg-yellow-500 text-white px-2 py-1 rounded mr-2 hover:bg-yellow-600"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDelete(grade.id, 'grades', 'Grade deleted successfully.')}
-                          className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="col-md-12">
+              <div className="card">
+                <div className="card-body">
+                  <h3 className="card-title mb-4">Manage Grades</h3>
+                  {grades.length === 0 && !loading && <p>No grades to display.</p>}
+                  <table className="table table-striped">
+                    <thead>
+                      <tr>
+                        <th>Student</th>
+                        <th>Subject</th>
+                        <th>Marks</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {grades.map((grade) => (
+                        <tr key={grade.id}>
+                          <td>{grade.student}</td>
+                          <td>{grade.subject}</td>
+                          <td>{grade.marks}</td>
+                          <td>
+                            <button
+                              onClick={() => {
+                                setModalData({ type: 'edit', data: grade });
+                                setShowModal(true);
+                              }}
+                              className="btn btn-warning btn-sm me-2"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDelete(grade.id, 'grades', 'Grade deleted successfully.')}
+                              className="btn btn-danger btn-sm"
+                            >
+                              Delete
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           </div>
           <Modal show={showModal} onHide={() => setShowModal(false)}>
