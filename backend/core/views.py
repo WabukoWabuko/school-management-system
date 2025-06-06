@@ -23,14 +23,14 @@ from .models import (
 User = get_user_model()
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def get_current_user(request):
-    print(f"Request headers for /api/users/me/: {request.headers}")  # Add this line
-    user = request.user
-    print(f"Received GET request for /users/me/ - User: {user.username}, Authenticated: {user.is_authenticated}")
-    serializer = UserSerializer(user)
-    print(f"Successfully serialized user data: {serializer.data}")
-    return Response(serializer.data)
+  @permission_classes([IsAuthenticated])
+  def get_current_user(request):
+      print(f"Request headers for /api/users/me/: {request.headers}")  # Add this line
+      user = request.user
+      print(f"Received GET request for /users/me/ - User: {user.username}, Authenticated: {user.is_authenticated}")
+      serializer = UserSerializer(user)
+      print(f"Successfully serialized user data: {serializer.data}")
+      return Response(serializer.data)
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
