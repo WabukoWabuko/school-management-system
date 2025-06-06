@@ -133,26 +133,28 @@ function AdminDashboard() {
   }, [debouncedSearch, activeTab, fetchData, tabDataMap]);
 
   useEffect(() => {
-    if (chartInstance.current) {
-      chartInstance.current.destroy();
+    if (activeTab === 'analytics' && chartRef.current) {
+      if (chartInstance.current) {
+        chartInstance.current.destroy();
+      }
+      const ctx = chartRef.current.getContext('2d');
+      chartInstance.current = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: classes.map(c => c.name),
+          datasets: [{
+            label: 'Students per Class',
+            data: classes.map(c => c.students?.length || 0),
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1,
+          }],
+        },
+        options: { scales: { y: { beginAtZero: true } } },
+      });
     }
-    const ctx = chartRef.current.getContext('2d');
-    chartInstance.current = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: classes.map(c => c.name),
-        datasets: [{
-          label: 'Students per Class',
-          data: classes.map(c => c.students?.length || 0),
-          backgroundColor: 'rgba(75, 192, 192, 0.2)',
-          borderColor: 'rgba(75, 192, 192, 1)',
-          borderWidth: 1,
-        }],
-      },
-      options: { scales: { y: { beginAtZero: true } } },
-    });
     return () => chartInstance.current?.destroy();
-  }, [classes]);
+  }, [activeTab, classes]);
 
   const handleCreate = async (data, endpoint, successMsg) => {
     try {
@@ -231,7 +233,7 @@ function AdminDashboard() {
   };
 
   const renderTabContent = () => {
-    const { data, setter } = tabDataMap[activeTab];
+    const { data } = tabDataMap[activeTab]; // Removed unused 'setter'
     const formData = {
       users: { username: '', email: '', role: 'student', password: '' },
       classes: { name: '', teacher: '' },
