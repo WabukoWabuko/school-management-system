@@ -40,7 +40,6 @@ function AdminDashboard() {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
 
-  // Memoize tabDataMap to stabilize its reference
   const tabDataMap = useMemo(() => ({
     users: { data: users, setter: setUsers },
     classes: { data: classes, setter: setClasses },
@@ -179,7 +178,7 @@ function AdminDashboard() {
       setLoading(true);
       const token = localStorage.getItem('token');
       if (!token) throw new Error('No authentication token found');
-      await axios.put(`http://localhost:8000/api/${endpoint}/`, data, {
+      await axios.put(`http://localhost:8000/api/${endpoint}/${data.id}/`, data, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const { setter } = tabDataMap[endpoint];
@@ -213,10 +212,26 @@ function AdminDashboard() {
     }
   };
 
-  if (!user) return <div className="alert alert-danger m-3">Error: User not authenticated</div>;
+  const handleSettingsUpdate = async (data, successMsg) => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('No authentication token found');
+      await axios.put(`http://localhost:8000/api/school-settings/`, data, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      fetchData('school-settings', setSettings, 'Failed to refresh settings.');
+      showToast(successMsg, 'success');
+      setShowModal(false);
+    } catch (err) {
+      showToast(err.response?.data?.message || err.message || 'Failed to update settings.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const renderTabContent = () => {
-    const { data } = tabDataMap[activeTab];
+    const { data, setter } = tabDataMap[activeTab];
     const formData = {
       users: { username: '', email: '', role: 'student', password: '' },
       classes: { name: '', teacher: '' },
@@ -238,35 +253,66 @@ function AdminDashboard() {
       settings: { schoolName: '', academicYear: '', motto: '', currentTerm: '', logo: '' },
     }[activeTab];
 
-    if (!data || data.length === 0) {
-      return <p>No data available for {activeTab}.</p>;
+    if (activeTab === 'analytics') {
+      return (
+        <div className="p-3">
+          <h3>School Analytics</h3>
+          <canvas ref={chartRef} style={{ maxHeight: '300px' }} />
+        </div>
+      );
     }
+
+    if (activeTab === 'settings' && !data) {
+      return <p>No settings available.</p>;
+    }
+
+    const isArrayData = Array.isArray(data);
+    const displayData = isArrayData ? data : [data];
 
     return (
       <div className="p-3">
-        <Button
-          variant="primary"
-          onClick={() => {
-            setModalData({ type: 'create', data: formData });
-            setShowModal(true);
-          }}
-        >
-          Add {activeTab.charAt(0).toUpperCase() + activeTab.slice(1, -1)}
-        </Button>
+        {activeTab !== 'settings' && activeTab !== 'analytics' && (
+          <Button
+            variant="primary"
+            onClick={() => {
+              setModalData({ type: 'create', data: { ...formData } });
+              setShowModal(true);
+            }}
+            className="mb-3"
+          >
+            Add {activeTab.charAt(0).toUpperCase() + activeTab.slice(1, -1)}
+          </Button>
+        )}
+        {activeTab === 'settings' && (
+          <Button
+            variant="primary"
+            onClick={() => {
+              setModalData({ type: 'edit', data: { ...data } });
+              setShowModal(true);
+            }}
+            className="mb-3"
+          >
+            Edit Settings
+          </Button>
+        )}
         <Modal show={showModal} onHide={() => setShowModal(false)}>
           <Modal.Header closeButton>
             <Modal.Title>
               {modalData.type === 'create' ? 'Create' : 'Edit'}{' '}
-              {activeTab.charAt(0).toUpperCase() + activeTab.slice(1, -1)}
+              {activeTab === 'settings' ? 'Settings' : activeTab.charAt(0).toUpperCase() + activeTab.slice(1, -1)}
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form
               onSubmit={(e) => {
                 e.preventDefault();
-                modalData.type === 'create'
-                  ? handleCreate(modalData.data, activeTab, 'Created successfully.')
-                  : handleUpdate(modalData.data, activeTab, 'Updated successfully.');
+                if (activeTab === 'settings') {
+                  handleSettingsUpdate(modalData.data, 'Settings updated successfully.');
+                } else if (modalData.type === 'create') {
+                  handleCreate(modalData.data, activeTab, 'Created successfully.');
+                } else {
+                  handleUpdate(modalData.data, activeTab, 'Updated successfully.');
+                }
               }}
             >
               {Object.keys(formData).map((key) => (
@@ -278,13 +324,19 @@ function AdminDashboard() {
                         ? 'password'
                         : key.includes('date')
                         ? 'date'
+                        : key.includes('present') || key.includes('completed') || key.includes('returned')
+                        ? 'checkbox'
                         : 'text'
                     }
                     value={modalData.data[key] || ''}
+                    checked={modalData.data[key] || false}
                     onChange={(e) =>
                       setModalData({
                         ...modalData,
-                        data: { ...modalData.data, [key]: e.target.value },
+                        data: {
+                          ...modalData.data,
+                          [key]: e.target.type === 'checkbox' ? e.target.checked : e.target.value,
+                        },
                       })
                     }
                   />
@@ -310,39 +362,41 @@ function AdminDashboard() {
           <Table striped bordered hover>
             <thead>
               <tr>
-                {Object.keys(data[0] || {}).map((key) => (
+                {Object.keys(displayData[0] || {}).map((key) => (
                   <th key={key}>{key}</th>
                 ))}
-                <th>Actions</th>
+                {isArrayData && <th>Actions</th>}
               </tr>
             </thead>
             <tbody>
-              {data.map((item) => (
-                <tr key={item.id}>
+              {displayData.map((item) => (
+                <tr key={item.id || Math.random()}>
                   {Object.values(item).map((val, i) => (
                     <td key={i}>{String(val)}</td>
                   ))}
-                  <td>
-                    <Button
-                      variant="warning"
-                      size="sm"
-                      onClick={() => {
-                        setModalData({ type: 'edit', data: item });
-                        setShowModal(true);
-                      }}
-                    >
-                      Edit
-                    </Button>{' '}
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      onClick={() =>
-                        handleDelete(item.id, activeTab, 'Deleted successfully.')
-                      }
-                    >
-                      Delete
-                    </Button>
-                  </td>
+                  {isArrayData && (
+                    <td>
+                      <Button
+                        variant="warning"
+                        size="sm"
+                        onClick={() => {
+                          setModalData({ type: 'edit', data: item });
+                          setShowModal(true);
+                        }}
+                      >
+                        Edit
+                      </Button>{' '}
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        onClick={() =>
+                          handleDelete(item.id, activeTab, 'Deleted successfully.')
+                        }
+                      >
+                        Delete
+                      </Button>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
@@ -432,10 +486,7 @@ function AdminDashboard() {
               {renderTabContent()}
             </Tab>
             <Tab eventKey="analytics" title="Analytics">
-              <div className="p-3">
-                <h3>School Analytics</h3>
-                <canvas ref={chartRef} style={{ maxHeight: '300px' }} />
-              </div>
+              {renderTabContent()}
             </Tab>
           </Tabs>
         </Card.Body>
