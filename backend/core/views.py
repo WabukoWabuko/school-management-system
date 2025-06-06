@@ -5,7 +5,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from .permissions import IsAdmin, IsAdminOrTeacher, IsAdminOrStaff, IsParent, IsStudent, IsAdminOrStaffOrParent, IsAdminOrTeacherOrParent
+from .permissions import IsAdmin, IsAdminOrTeacher, IsAdminOrStaff, IsParent, IsStudent, IsAdminOrStaffOrParent, IsAdminOrTeacherOrParent, IsAdminOrStudentForTimetable, IsAdminOrTeacherOrStudentForHomework
 from .serializers import (
     UserSerializer, SubjectSerializer, ClassInstanceSerializer, StudentSerializer,
     ParentSerializer, ExamSerializer, GradeSerializer, AttendanceSerializer,
@@ -85,7 +85,7 @@ class ExamViewSet(viewsets.ModelViewSet):
 class GradeViewSet(viewsets.ModelViewSet):
     queryset = Grade.objects.all()
     serializer_class = GradeSerializer
-    permission_classes = [IsAdminOrTeacherOrParent]  # Use custom permission
+    permission_classes = [IsAdminOrTeacherOrParent]
 
     def get_queryset(self):
         user = self.request.user
@@ -122,7 +122,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
 class FeeViewSet(viewsets.ModelViewSet):
     queryset = Fee.objects.all()
     serializer_class = FeeSerializer
-    permission_classes = [IsAdminOrStaffOrParent]  # Use custom permission
+    permission_classes = [IsAdminOrStaffOrParent]
 
     def get_queryset(self):
         user = self.request.user
@@ -182,7 +182,7 @@ class MessageViewSet(viewsets.ModelViewSet):
 class TimetableViewSet(viewsets.ModelViewSet):
     queryset = Timetable.objects.all()
     serializer_class = TimetableSerializer
-    permission_classes = [IsAdmin]
+    permission_classes = [IsAdminOrStudentForTimetable]  # Updated permission
 
     def get_queryset(self):
         user = self.request.user
@@ -198,7 +198,7 @@ class TimetableViewSet(viewsets.ModelViewSet):
 class HomeworkViewSet(viewsets.ModelViewSet):
     queryset = Homework.objects.all()
     serializer_class = HomeworkSerializer
-    permission_classes = [IsAdminOrTeacher]
+    permission_classes = [IsAdminOrTeacherOrStudentForHomework]  # Updated permission
 
     def get_queryset(self):
         user = self.request.user
@@ -223,7 +223,7 @@ class LibraryBorrowingViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdminOrStaff]
 
     def get_queryset(self):
-        user = self.request.user
+        user = the.request.user
         if user.is_superuser or user.role == 'admin':
             return LibraryBorrowing.objects.all()
         elif user.role == 'student':

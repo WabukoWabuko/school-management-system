@@ -78,3 +78,17 @@ class IsAdminOrTeacherOrParent(permissions.BasePermission):
     """
     def has_permission(self, request, view):
         return request.user.is_authenticated and request.user.role in ['admin', 'teacher', 'parent']
+
+class IsAdminOrStudentForTimetable(permissions.BasePermission):
+    """
+    Allows access to admin or student users for timetables.
+    """
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and request.user.role in ['admin', 'student']
+
+class IsAdminOrTeacherOrStudentForHomework(permissions.BasePermission):
+    """
+    Allows access to admin, teacher, or student users for homework.
+    """
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and request.user.role in ['admin', 'teacher', 'student']
