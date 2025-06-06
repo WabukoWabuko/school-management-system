@@ -85,7 +85,7 @@ class ExamViewSet(viewsets.ModelViewSet):
 class GradeViewSet(viewsets.ModelViewSet):
     queryset = Grade.objects.all()
     serializer_class = GradeSerializer
-    permission_classes = [IsAdminOrTeacher]
+    permission_classes = [IsAdminOrTeacher, IsParent]  # Allow parents to access
 
     def get_queryset(self):
         user = self.request.user
@@ -122,7 +122,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
 class FeeViewSet(viewsets.ModelViewSet):
     queryset = Fee.objects.all()
     serializer_class = FeeSerializer
-    permission_classes = [IsAdminOrStaff]
+    permission_classes = [IsAdminOrStaff, IsParent]  # Allow parents to access
 
     def get_queryset(self):
         user = self.request.user
