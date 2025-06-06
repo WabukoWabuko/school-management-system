@@ -70,9 +70,9 @@ class Subject(models.Model):
     def __str__(self):
         return self.name
 
-class Class(models.Model):
+class ClassInstance(models.Model):
     name = models.CharField(max_length=50)
-    subjects = models.ManyToManyField(Subject)
+    subjects = models.ManyToManyField(Subject, related_name='classes')
     teachers = models.ManyToManyField(User, related_name='teaching_classes', limit_choices_to={'role': 'teacher'})
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_classes', limit_choices_to={'role': 'admin'}, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -84,7 +84,7 @@ class Class(models.Model):
 class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, limit_choices_to={'role': 'student'})
     admission_number = models.CharField(max_length=20, unique=True)
-    class_instance = models.ForeignKey(Class, on_delete=models.CASCADE, related_name='students')
+    class_instance = models.ForeignKey(ClassInstance, on_delete=models.CASCADE, related_name='students')
     parents = models.ManyToManyField(User, related_name='children', limit_choices_to={'role': 'parent'})
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -113,9 +113,9 @@ class Exam(models.Model):
         return f"{self.name} - {self.term} {self.year}"
 
 class Grade(models.Model):
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
-    exam = models.ForeignKey(Exam, on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='grades')
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='grades')
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='grades')
     marks = models.FloatField(validators=[MinValueValidator(0), MaxValueValidator(100)])
     remarks = models.TextField(blank=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'role': 'teacher'})
@@ -126,10 +126,10 @@ class Grade(models.Model):
         return f"{self.student} - {self.subject} - {self.marks}"
 
 class Attendance(models.Model):
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    class_instance = models.ForeignKey(Class, on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='attendance')
+    class_instance = models.ForeignKey(ClassInstance, on_delete=models.CASCADE, related_name='attendance')
     date = models.DateField()
-    present = models.BooleanField()
+    present = models.BooleanField(default=False)
     remarks = models.TextField(blank=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'role': 'teacher'})
     created_at = models.DateTimeField(auto_now_add=True)
@@ -139,7 +139,7 @@ class Attendance(models.Model):
         return f"{self.student} - {self.date} - {'Present' if self.present else 'Absent'}"
 
 class Fee(models.Model):
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='fees')
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     balance = models.DecimalField(max_digits=10, decimal_places=2)
     date = models.DateField()
@@ -174,7 +174,7 @@ class Message(models.Model):
         return f"{self.sender} to {self.receiver}: {self.content[:50]}"
 
 class Timetable(models.Model):
-    class_instance = models.ForeignKey(Class, on_delete=models.CASCADE)
+    class_instance = models.ForeignKey(ClassInstance, on_delete=models.CASCADE, related_name='timetables')
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
     day = models.CharField(max_length=10)
     start_time = models.TimeField()
@@ -188,7 +188,7 @@ class Timetable(models.Model):
         return f"{self.class_instance} - {self.subject} - {self.day}"
 
 class Homework(models.Model):
-    class_instance = models.ForeignKey(Class, on_delete=models.CASCADE)
+    class_instance = models.ForeignKey(ClassInstance, on_delete=models.CASCADE, related_name='homework')
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
     description = models.TextField()
     due_date = models.DateField()
@@ -213,8 +213,8 @@ class LibraryItem(models.Model):
         return self.title
 
 class LibraryBorrowing(models.Model):
-    library_item = models.ForeignKey(LibraryItem, on_delete=models.CASCADE)
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    library_item = models.ForeignKey(LibraryItem, on_delete=models.CASCADE, related_name='borrowings')
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='borrowings')
     borrow_date = models.DateField()
     return_date = models.DateField(null=True, blank=True)
     returned = models.BooleanField(default=False)
@@ -239,10 +239,10 @@ class LeaveApplication(models.Model):
         return f"{self.user} - {self.start_date} to {self.end_date}"
 
 class ReportCard(models.Model):
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='report_cards')
     term = models.CharField(max_length=20)
     year = models.IntegerField()
-    grades = models.ManyToManyField(Grade)
+    grades = models.ManyToManyField(Grade, related_name='report_cards')
     overall_grade = models.CharField(max_length=10, blank=True)
     remarks = models.TextField(blank=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'role': 'admin'}, null=True, blank=True)
@@ -253,7 +253,7 @@ class ReportCard(models.Model):
         return f"{self.student} - {self.term} {self.year}"
 
 class ParentFeedback(models.Model):
-    parent = models.ForeignKey(Parent, on_delete=models.CASCADE)
+    parent = models.ForeignKey(Parent, on_delete=models.CASCADE, related_name='feedback')
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -262,7 +262,7 @@ class ParentFeedback(models.Model):
         return f"{self.parent} - {self.content[:50]}"
 
 class AuditLog(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='audit_logs')
     action = models.CharField(max_length=200)
     model_name = models.CharField(max_length=100)
     object_id = models.CharField(max_length=50, blank=True)
@@ -271,3 +271,12 @@ class AuditLog(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.action} - {self.created_at}"
+
+class ContactMessage(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} - {self.email}"
