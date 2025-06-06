@@ -25,6 +25,7 @@ User = get_user_model()
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_current_user(request):
+    print(f"Request headers for /api/users/me/: {request.headers}")  # Add this line
     user = request.user
     print(f"Received GET request for /users/me/ - User: {user.username}, Authenticated: {user.is_authenticated}")
     serializer = UserSerializer(user)
