@@ -2,22 +2,22 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
     get_current_user,
-    UserViewSet, 
-    SubjectViewSet, 
-    ClassViewSet, 
-    StudentViewSet, 
+    UserViewSet,
+    SubjectViewSet,
+    ClassInstanceViewSet,
+    StudentViewSet,
     ParentViewSet,
-    ExamViewSet, 
-    GradeViewSet, 
-    AttendanceViewSet, 
-    FeeViewSet, 
+    ExamViewSet,
+    GradeViewSet,
+    AttendanceViewSet,
+    FeeViewSet,
     AnnouncementViewSet,
-    MessageViewSet, 
-    TimetableViewSet, 
-    HomeworkViewSet, 
-    LibraryItemViewSet, 
+    MessageViewSet,
+    TimetableViewSet,
+    HomeworkViewSet,
+    LibraryItemViewSet,
     LibraryBorrowingViewSet,
-    LeaveApplicationViewSet, 
+    LeaveApplicationViewSet,
     ReportCardViewSet,
     ParentFeedbackViewSet,
     AuditLogViewSet,
@@ -28,7 +28,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 router = DefaultRouter()
 router.register(r'users', UserViewSet)
 router.register(r'subjects', SubjectViewSet)
-router.register(r'classes', ClassViewSet)
+router.register(r'classes', ClassInstanceViewSet)
 router.register(r'students', StudentViewSet)
 router.register(r'parents', ParentViewSet)
 router.register(r'exams', ExamViewSet)

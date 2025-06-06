@@ -134,8 +134,7 @@ class FeeViewSet(viewsets.ModelViewSet):
             return Fee.objects.filter(student__user=user)
         return Fee.objects.none()
 
-    @api_view(['POST'])
-    @permission_classes([IsParent])
+    @action(detail=True, methods=['post'], permission_classes=[IsParent])
     def pay(self, request, pk=None):
         try:
             fee = Fee.objects.get(id=pk)
