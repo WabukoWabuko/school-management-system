@@ -15,7 +15,6 @@ import TeacherDashboard from './pages/dashboards/TeacherDashboard';
 import ParentDashboard from './pages/dashboards/ParentDashboard';
 import StudentDashboard from './pages/dashboards/StudentDashboard';
 import StaffDashboard from './pages/dashboards/StaffDashboard';
-import 'react-toastify/dist/ReactToastify.css';
 import './index.css';
 
 function App() {
